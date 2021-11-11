@@ -79,7 +79,7 @@ class StrategyBase(bt.Strategy):
                      order.executed.value,
                      order.executed.comm), True)
                 if ENV == PRODUCTION:
-                    print(order.__dict__)
+                    print('order info: ', order.__dict__)
 
             else:  # Sell
                 self.last_operation = "SELL"
@@ -88,6 +88,8 @@ class StrategyBase(bt.Strategy):
                          (order.executed.price,
                           order.executed.value,
                           order.executed.comm), True)
+                if ENV == PRODUCTION:
+                    print('order info: ', order.__dict__)
 
             # Sentinel to None: new orders allowed
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:

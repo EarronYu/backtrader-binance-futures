@@ -9,7 +9,7 @@ from strategies.base import StrategyBase
 class BasicRSI(StrategyBase):
     params = dict(
         period_ema_fast=10,
-        period_ema_slow=100
+        period_ema_slow=200
     )
 
     def __init__(self):
@@ -39,7 +39,7 @@ class BasicRSI(StrategyBase):
         # stop Loss
         if self.profit < -0.03:
             self.log("STOP LOSS: percentage %.3f %%" % self.profit)
-            self.short()
+            self.close()
 
         if self.last_operation != "BUY":
             if self.rsi < 30 and self.ema_fast > self.ema_slow:

@@ -4,8 +4,6 @@ import time
 import backtrader as bt
 import datetime as dt
 
-
-
 from ccxtbt import CCXTStore
 from config import BINANCE, ENV, PRODUCTION, COIN_TARGET, COIN_REFER, DEBUG
 
@@ -22,11 +20,14 @@ def main():
         broker_config = {
             'apiKey': BINANCE.get("key"),
             'secret': BINANCE.get("secret"),
+            'timeout': 5000,
+            'verbose': False,
             'nonce': lambda: str(int(time.time() * 1000)),
             'enableRateLimit': True,
         }
 
-        store = CCXTStore(exchange='binance', currency=COIN_REFER, config=broker_config, retries=5, debug=DEBUG)
+        store = CCXTStore(exchange='binanceusdm', currency=COIN_REFER, config=broker_config, retries=5, debug=False,
+                          sandbox=True)
 
         broker_mapping = {
             'order_types': {
@@ -47,17 +48,18 @@ def main():
             }
         }
 
+        # store.set_sandbox_mode(True)
         broker = store.getbroker(broker_mapping=broker_mapping)
         cerebro.setbroker(broker)
 
-        hist_start_date = dt.datetime.utcnow() - dt.timedelta(minutes=30000)
+        hist_start_date = dt.datetime.utcnow() - dt.timedelta(minutes=3000)
         data = store.getdata(
             dataname='%s/%s' % (COIN_TARGET, COIN_REFER),
             name='%s%s' % (COIN_TARGET, COIN_REFER),
             timeframe=bt.TimeFrame.Minutes,
             fromdate=hist_start_date,
-            compression=30,
-            ohlcv_limit=99999
+            compression=1,
+            ohlcv_limit=10000
         )
 
         # Add the feed
