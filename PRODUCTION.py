@@ -53,17 +53,19 @@ def main():
         cerebro.setbroker(broker)
 
         hist_start_date = dt.datetime.utcnow() - dt.timedelta(minutes=3000)
-        data = store.getdata(
+        datakl = store.getdata(
             dataname='%s/%s' % (COIN_TARGET, COIN_REFER),
             name='%s%s' % (COIN_TARGET, COIN_REFER),
             timeframe=bt.TimeFrame.Minutes,
             fromdate=hist_start_date,
-            compression=1,
+            compression=5,
             ohlcv_limit=10000
         )
-
+        dataha = datakl.clone()
+        dataha.addfilter(bt.filters.HeikinAshi(dataha))
         # Add the feed
-        cerebro.adddata(data)
+        cerebro.adddata(datakl, name='Kline')
+        cerebro.adddata(dataha, name='Heikin')
 
     else:  # Backtesting with CSV file
         data = CustomDataset(

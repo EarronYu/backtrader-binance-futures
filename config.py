@@ -3,7 +3,7 @@ import os
 PRODUCTION = "production"
 DEVELOPMENT = "development"
 
-COIN_TARGET = "BTC"
+COIN_TARGET = "BNB"
 COIN_REFER = "USDT"
 
 ENV = os.getenv("ENVIRONMENT", PRODUCTION)

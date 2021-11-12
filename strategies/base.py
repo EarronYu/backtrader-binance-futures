@@ -11,8 +11,8 @@ class StrategyBase(bt.Strategy):
     def __init__(self):
         # Set some pointers / references
         for i, d in enumerate(self.datas):
-            if d._name == 'Real':
-                self.sk = d
+            if d._name == 'Kline':
+                self.kl = d
             elif d._name == 'Heikin':
                 self.ha = d
 
@@ -36,7 +36,7 @@ class StrategyBase(bt.Strategy):
 
         self.profit = 0
 
-        self.log("Base strategy initialized", fgprint=False)
+        self.log("Base strategy initialized", fgprint=True)
 
     def reset_order_indicators(self):
         self.soft_sell = False
@@ -50,52 +50,60 @@ class StrategyBase(bt.Strategy):
         self.status = data._getstatusname(status)
         print(self.status)
         if status == data.LIVE:
-            self.log("LIVE DATA - Ready to trade", fgprint=False)
+            self.log("LIVE DATA - Ready to trade", fgprint=True)
 
     def update_indicators(self):
         self.profit = 0
         if self.buy_price_close and self.buy_price_close > 0:
-            self.profit = float(self.data0.close[0] - self.buy_price_close) / self.buy_price_close
+            self.profit = float(self.kl.close[0] - self.buy_price_close) / self.buy_price_close
         if self.sell_price_close and self.sell_price_close > 0:
-            self.profit = float(self.sell_price_close - self.data0.close[0]) / self.sell_price_close
+            self.profit = float(self.sell_price_close - self.kl.close[0]) / self.sell_price_close
 
     def short(self):
         if self.last_operation == "SELL":
             return
 
-        self.sell_price_close = self.data0.close[0]
-        price = self.data0.close[0]
+        self.sell_price_close = self.kl.close[0]
+        price = self.kl.close[0]
 
         if ENV == DEVELOPMENT:
-            self.log("Sell ordered: $%.2f" % self.data0.close[0], fgprint=False)
+            self.log("Sell ordered: $%.2f" % self.kl.close[0], fgprint=True)
             return self.sell()
 
         cash, value = self.broker.get_wallet_balance(COIN_REFER)
         # print(cash, ' ', value)
         amount = (value / price) * 0.99
-        self.log("Sell ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (self.data0.close[0],
+        self.log("Sell ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (self.kl.close[0],
                                                                               amount, COIN_TARGET, value),
-                 send_telegram=False, fgprint=False)
-        return self.sell(size=amount)
+                 send_telegram=False, fgprint=True)
+        return self.sell(data=self.kl, size=amount)
 
     def long(self):
         if self.last_operation == "BUY":
             return
 
         # self.log("Buy ordered: $%.2f" % self.data0.close[0], True)
-        self.buy_price_close = self.data0.close[0]
-        price = self.data0.close[0]
+        self.buy_price_close = self.kl.close[0]
+        price = self.kl.close[0]
 
         if ENV == DEVELOPMENT:
-            self.log("Buy ordered: $%.2f" % self.data0.close[0], fgprint=False)
+            self.log("Buy ordered: $%.2f" % self.kl.close[0], fgprint=True)
             return self.buy()
 
         cash, value = self.broker.get_wallet_balance(COIN_REFER)
         amount = (value / price) * 0.99  # Workaround to avoid precision issues
-        self.log("Buy ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (self.data0.close[0],
+        self.log("Buy ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (self.kl.close[0],
                                                                              amount, COIN_TARGET, value),
-                 send_telegram=False, fgprint=False)
-        return self.buy(size=amount)
+                 send_telegram=False, fgprint=True)
+        return self.buy(data=self.kl, size=amount)
+
+    def close_long(self):
+        if self.last_operation == "BUY":
+            return self.close()
+
+    def close_short(self):
+        if self.last_operation == "SELL":
+            return self.close
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -103,12 +111,12 @@ class StrategyBase(bt.Strategy):
             # Buy/Sell order submitted/accepted to/by broker
             # broker经纪人：submitted提交/accepted接受,Buy买单/Sell卖单
             # Buy/Sell order submitted/accepted to/by broker - Nothing to do
-            self.log('ORDER ACCEPTED/SUBMITTED', fgprint=False)
+            self.log('ORDER ACCEPTED/SUBMITTED', fgprint=True)
             self.order = order
             return
 
         if order.status in [order.Expired]:
-            self.log('BUY EXPIRED', send_telegram=False, fgprint=False)
+            self.log('BUY EXPIRED', send_telegram=False, fgprint=True)
 
         if order.status in [order.Completed]:
             # 检查订单order是否完成
@@ -122,13 +130,13 @@ class StrategyBase(bt.Strategy):
                     self.log('SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
                              (order.executed.price,
                               order.executed.value,
-                              order.executed.comm), fgprint=False)
+                              order.executed.comm), fgprint=True)
                 if ENV == PRODUCTION:
-                    print(order.__dict__)
+                    # print(order.__dict__)
                     self.log('BUY EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
                              (order.ccxt_order['average'],
                               order.ccxt_order['cost'],
-                              order.ccxt_order['cost'] * 0.0004), send_telegram=False, fgprint=False)
+                              order.ccxt_order['cost'] * 0.0004), send_telegram=False, fgprint=True)
                     self.buyprice = order.ccxt_order['average']
                     self.buycomm = order.ccxt_order['cost'] * 0.0004
                 if ENV == DEVELOPMENT:
@@ -141,13 +149,13 @@ class StrategyBase(bt.Strategy):
                     self.log('SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
                              (order.executed.price,
                               order.executed.value,
-                              order.executed.comm), fgprint=False)
+                              order.executed.comm), fgprint=True)
                 if ENV == PRODUCTION:
-                    print(order.__dict__)
+                    # print(order.__dict__)
                     self.log('SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
                              (order.ccxt_order['average'],
                               order.ccxt_order['cost'],
-                              order.ccxt_order['cost'] * 0.0004), send_telegram=False, fgprint=False)
+                              order.ccxt_order['cost'] * 0.0004), send_telegram=False, fgprint=True)
                     self.sellprice = order.ccxt_order['average']
                     self.sellcomm = order.ccxt_order['cost'] * 0.0004
                 if ENV == DEVELOPMENT:
@@ -158,7 +166,7 @@ class StrategyBase(bt.Strategy):
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
             self.log('Order Canceled/Margin/Rejected: Status %s - %s' % (order.Status[order.status],
                                                                          self.last_operation), send_telegram=False,
-                     fgprint=False)
+                     fgprint=True)
         # Sentinel to None: new orders allowed
         self.order = None
 
@@ -172,9 +180,9 @@ class StrategyBase(bt.Strategy):
 
         self.log(colored('OPERATION PROFIT, GROSS %.2f, NET %.2f' % (trade.pnl, trade.pnlcomm), color),
                  send_telegram=False,
-                 fgprint=False)
+                 fgprint=True)
 
-    def log(self, txt, send_telegram=False, color=None, fgprint=False):
+    def log(self, txt, send_telegram=False, color=None, fgprint=True):
         if fgprint:
             value = datetime.now()
             if len(self) > 0:
