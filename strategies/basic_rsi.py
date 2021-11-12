@@ -32,9 +32,12 @@ class BasicRSI(StrategyBase):
         # stop Loss
         if self.profit < -0.03:
             self.log("STOP LOSS: percentage %.3f %%" % self.profit, fgprint=False)
-            self.order = self.close()
+            if self.last_operation == "long":
+                self.order = self.close_short()
+            if self.last_operation == "short":
+                self.order = self.close_short()
 
-        if self.last_operation != "BUY":
+        if self.last_operation != "long":
             if self.rsi < 30 and self.ema_fast > self.ema_slow:
                 if not self.position:
                     self.order = self.long()
@@ -42,7 +45,7 @@ class BasicRSI(StrategyBase):
                     self.order = self.close()
                     self.order = self.long()
 
-        if self.last_operation != "SELL":
+        if self.last_operation != "short":
             if self.rsi > 70:
                 if not self.position:
                     self.order = self.short()

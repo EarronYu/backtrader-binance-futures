@@ -58,7 +58,7 @@ def main():
             name='%s%s' % (COIN_TARGET, COIN_REFER),
             timeframe=bt.TimeFrame.Minutes,
             fromdate=hist_start_date,
-            compression=5,
+            compression=1,
             ohlcv_limit=10000
         )
         dataha = datakl.clone()
