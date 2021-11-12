@@ -14,20 +14,11 @@ class BasicRSI(StrategyBase):
 
     def __init__(self):
         StrategyBase.__init__(self)
-        self.log("Using RSI/EMA strategy")
+        self.log("Using RSI/EMA strategy", fgprint=True)
 
         self.ema_fast = bt.indicators.EMA(period=self.p.period_ema_fast)
         self.ema_slow = bt.indicators.EMA(period=self.p.period_ema_slow)
         self.rsi = bt.indicators.RelativeStrengthIndex()
-
-        self.profit = 0
-
-    def update_indicators(self):
-        self.profit = 0
-        if self.buy_price_close and self.buy_price_close > 0:
-            self.profit = float(self.data0.close[0] - self.buy_price_close) / self.buy_price_close
-        if self.sell_price_close and self.sell_price_close > 0:
-            self.profit = float(self.sell_price_close - self.data0.close[0]) / self.sell_price_close
 
     def next(self):
         self.update_indicators()
@@ -40,14 +31,21 @@ class BasicRSI(StrategyBase):
 
         # stop Loss
         if self.profit < -0.03:
-            self.log("STOP LOSS: percentage %.3f %%" % self.profit)
-            self.close()
+            self.log("STOP LOSS: percentage %.3f %%" % self.profit, fgprint=True)
+            self.order = self.close()
 
         if self.last_operation != "BUY":
             if self.rsi < 30 and self.ema_fast > self.ema_slow:
-                self.long()
+                if not self.position:
+                    self.order = self.long()
+                else:
+                    self.order = self.close()
+                    self.order = self.long()
 
         if self.last_operation != "SELL":
             if self.rsi > 70:
-                self.short()
-
+                if not self.position:
+                    self.order = self.short()
+                else:
+                    self.order = self.close()
+                    self.order = self.short()

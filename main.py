@@ -75,10 +75,10 @@ def main():
             nullvalue=0.0
         )
 
-        cerebro.resampledata(data, timeframe=bt.TimeFrame.Minutes, compression=30)
+        cerebro.resampledata(data, timeframe=bt.TimeFrame.Minutes, compression=1)
 
         broker = cerebro.getbroker()
-        broker.setcommission(commission=0.001, name=COIN_TARGET)  # Simulating exchange fee
+        broker.setcommission(commission=0.0004, name=COIN_TARGET)  # Simulating exchange fee
         broker.setcash(100000.0)
         cerebro.addsizer(FullMoney)
 
