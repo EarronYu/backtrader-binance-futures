@@ -26,6 +26,8 @@ class BasicRSI(StrategyBase):
         self.profit = 0
         if self.buy_price_close and self.buy_price_close > 0:
             self.profit = float(self.data0.close[0] - self.buy_price_close) / self.buy_price_close
+        if self.sell_price_close and self.sell_price_close > 0:
+            self.profit = float(self.sell_price_close - self.data0.close[0]) / self.sell_price_close
 
     def next(self):
         self.update_indicators()

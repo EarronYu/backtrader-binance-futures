@@ -10,10 +10,11 @@ from utils import send_telegram_message
 class StrategyBase(bt.Strategy):
     def __init__(self):
         self.order = None
-        self.last_operation = "SELL"
+        self.last_operation = None
         self.status = "DISCONNECTED"
         self.bar_executed = 0
         self.buy_price_close = None
+        self.sell_price_close = None
         self.soft_sell = False
         self.hard_sell = False
         self.log("Base strategy initialized")
@@ -22,6 +23,7 @@ class StrategyBase(bt.Strategy):
         self.soft_sell = False
         self.hard_sell = False
         self.buy_price_close = None
+        self.sell_price_close = None
 
     def notify_data(self, data, status, *args, **kwargs):
         self.status = data._getstatusname(status)
@@ -33,12 +35,16 @@ class StrategyBase(bt.Strategy):
         if self.last_operation == "SELL":
             return
 
+        self.sell_price_close = self.data0.close[0]
+        price = self.data0.close[0]
+
         if ENV == DEVELOPMENT:
             self.log("Sell ordered: $%.2f" % self.data0.close[0])
             return self.sell()
 
-        cash, value = self.broker.get_wallet_balance(COIN_TARGET)
-        amount = value*0.99
+        cash, value = self.broker.get_wallet_balance(COIN_REFER)
+        # print(cash, ' ', value)
+        amount = (value / price) * 0.99
         self.log("Sell ordered: $%.2f. Amount %.6f %s - $%.2f USDT" % (self.data0.close[0],
                                                                        amount, COIN_TARGET, value), True)
         return self.sell(size=amount)
@@ -47,7 +53,7 @@ class StrategyBase(bt.Strategy):
         if self.last_operation == "BUY":
             return
 
-        self.log("Buy ordered: $%.2f" % self.data0.close[0], True)
+        # self.log("Buy ordered: $%.2f" % self.data0.close[0], True)
         self.buy_price_close = self.data0.close[0]
         price = self.data0.close[0]
 
@@ -75,20 +81,20 @@ class StrategyBase(bt.Strategy):
                 self.last_operation = "BUY"
                 self.log(
                     'BUY EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                    (order.executed.price,
-                     order.executed.value,
-                     order.executed.comm), True)
-                if ENV == PRODUCTION:
+                    (order.ccxt_order['average'],
+                     order.ccxt_order['cost'],
+                     order.ccxt_order['cost'] * 0.0004), True)
+                if ENV == DEVELOPMENT:
                     print('order info: ', order.__dict__)
 
             else:  # Sell
                 self.last_operation = "SELL"
                 self.reset_sell_indicators()
                 self.log('SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                         (order.executed.price,
-                          order.executed.value,
-                          order.executed.comm), True)
-                if ENV == PRODUCTION:
+                         (order.ccxt_order['average'],
+                          order.ccxt_order['cost'],
+                          order.ccxt_order['cost'] * 0.0004), True)
+                if ENV == DEVELOPMENT:
                     print('order info: ', order.__dict__)
 
             # Sentinel to None: new orders allowed
