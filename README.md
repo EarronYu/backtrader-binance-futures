@@ -41,3 +41,10 @@ Trade Analysis Results:
                1              5              2              19192.61       
 SQN: 1.75
 ```
+
+## To do list
+
+![img.png](img.png)
+
+### 至今的所有修改进度
+![img_1.png](img_1.png)
