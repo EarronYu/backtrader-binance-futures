@@ -9,12 +9,12 @@ from utils import send_telegram_message
 
 class StrategyBase(bt.Strategy):
     def __init__(self):
-        # Set some pointers / references
-        for i, d in enumerate(self.datas):
-            if d._name == 'Kline':
-                self.kl = d
-            elif d._name == 'Heikin':
-                self.ha = d
+        # # Set some pointers / references
+        # for i, d in enumerate(self.datas):
+        #     if d._name == 'Kline':
+        #         self.kl = d
+        #     elif d._name == 'Heikin':
+        #         self.ha = d
 
         self.buyprice = None
         self.buycomm = None
@@ -52,6 +52,25 @@ class StrategyBase(bt.Strategy):
         if status == data.LIVE:
             self.log("LIVE DATA - Ready to trade", fgprint=True)
 
+    def notify_order(self, order):
+        # StrategyBase.notify_order(self, order)
+        if order.status in [order.Submitted, order.Accepted]:
+            # 检查订单执行状态order.status：
+            # Buy/Sell order submitted/accepted to/by broker
+            # broker经纪人：submitted提交/accepted接受,Buy买单/Sell卖单
+            # Buy/Sell order submitted/accepted to/by broker - Nothing to do
+            self.log('ORDER ACCEPTED/SUBMITTED', fgprint=True)
+            self.order = order
+            return
+
+        if order.status in [order.Expired]:
+            self.log('LONG EXPIRED', send_telegram=False, fgprint=True)
+
+        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
+            self.log('Order Canceled/Margin/Rejected: Status %s - %s' % (order.Status[order.status],
+                                                                         self.last_operation), send_telegram=False,
+                     fgprint=True)
+
     def update_indicators(self):
         self.profit = 0
         if self.buy_price_close and self.buy_price_close > 0:
@@ -59,55 +78,76 @@ class StrategyBase(bt.Strategy):
         if self.sell_price_close and self.sell_price_close > 0:
             self.profit = float(self.sell_price_close - self.kl.close[0]) / self.sell_price_close
 
-    def short(self):
+    def short(self, data=None):
         if self.last_operation == "short":
             return
 
-        self.sell_price_close = self.kl.close[0]
-        price = self.kl.close[0]
+        if isinstance(data, str):
+            data = self.getdatabyname(data)
+
+        data = data if data is not None else self.datas[0]
+        self.sell_price_close = data.close[0]
+
+        price = data.close[0]
 
         if ENV == DEVELOPMENT:
-            self.log("open short ordered: $%.2f" % self.kl.close[0], fgprint=True)
-            return self.sell()
+            self.log("open short ordered: $%.2f" % data.close[0], fgprint=True)
+            return self.sell(data=data)
 
         cash, value = self.broker.get_wallet_balance(COIN_REFER)
         # print(cash, ' ', value)
         amount = (value / price) * 0.99
-        self.log("open short ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (self.kl.close[0],
+        self.log("open short ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (data.close[0],
                                                                               amount, COIN_TARGET, value),
                  send_telegram=False, fgprint=True)
-        return self.sell(data=self.kl, size=amount)
+        return self.sell(data=data, size=amount)
 
-    def long(self):
+    def long(self, data=None):
         if self.last_operation == "long":
             return
 
+        if isinstance(data, str):
+            data = self.getdatabyname(data)
+
+        data = data if data is not None else self.datas[0]
         # self.log("Buy ordered: $%.2f" % self.data0.close[0], True)
-        self.buy_price_close = self.kl.close[0]
-        price = self.kl.close[0]
+        self.buy_price_close = data.close[0]
+        price = data.close[0]
 
         if ENV == DEVELOPMENT:
-            self.log("open long ordered: $%.2f" % self.kl.close[0], fgprint=True)
-            return self.buy()
+            self.log("open long ordered: $%.2f" % data.close[0], fgprint=True)
+            return self.buy(data=data)
 
         cash, value = self.broker.get_wallet_balance(COIN_REFER)
         amount = (value / price) * 0.99  # Workaround to avoid precision issues
-        self.log("open long ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (self.kl.close[0],
+        self.log("open long ordered: $%.2f. Amount %.6f %s. Balance $%.2f USDT" % (data.close[0],
                                                                              amount, COIN_TARGET, value),
                  send_telegram=False, fgprint=True)
-        return self.buy(data=self.kl, size=amount)
+        return self.buy(data=data, size=amount)
 
-    def close_long(self):
+    def close_long(self, data=None):
+        if isinstance(data, str):
+            data = self.getdatabyname(data)
+        elif data is None:
+            data = self.data
         if self.last_operation == "long":
             if ENV == DEVELOPMENT:
-                self.log("close long ordered: $%.2f" % self.kl.close[0], fgprint=True)
-                return self.close()
-            self.log("close long ordered: $%.2f" % self.kl.close[0], send_telegram=False, fgprint=True)
-            return self.close()
+                self.log("close long ordered: $%.2f" % data.close[0], fgprint=True)
+                return self.close(data=data)
+            self.log("close long ordered: $%.2f" % data.close[0], send_telegram=False, fgprint=True)
+            return self.close(data=data)
 
-    def close_short(self):
+    def close_short(self, data=None):
+        if isinstance(data, str):
+            data = self.getdatabyname(data)
+        elif data is None:
+            data = self.data
         if self.last_operation == "short":
-            return self.close()
+            if ENV == DEVELOPMENT:
+                self.log("close short ordered: $%.2f" % data.close[0], fgprint=True)
+                return self.close(data=data)
+            self.log("close short ordered: $%.2f" % data.close[0], send_telegram=False, fgprint=True)
+            return self.close(data=data)
 
     def notify_trade(self, trade):
         if not trade.isclosed:

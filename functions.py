@@ -900,7 +900,7 @@ def trading_record(order, strategy, symbol, time_period, signal_type):
     quantity = order['executedQty']
     price = order['avgPrice']
     order_time = order['updateTime']
-    side = signal_type
+    side = signal_type['side']
     order_time = intTodatetime(order_time)
     # record = pd.read_csv('data//trading_record.csv')
     record = pd.read_hdf(f'data//{strategy}_trading_record.h5', key=f'{symbol}', mode='a')

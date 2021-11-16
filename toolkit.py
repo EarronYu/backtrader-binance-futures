@@ -17,8 +17,11 @@ QQ群: Top极宽量化总群，124134140
 
 '''
 #
-
+from datetime import datetime
 import sys, os, re
+import time
+import csv
+
 import arrow, bs4, random
 import numexpr as ne
 #
@@ -31,7 +34,7 @@ import collections
 import cpuinfo as cpu
 import psutil as psu
 from functools import wraps
-import datetime  as dt
+import datetime as dt
 import copy
 #
 import numpy as np
@@ -209,11 +212,87 @@ def tq_init(prjNam='TQ01', cash0=100000.0, stake0=100):
     return qx
 
 
+def intTodatetime(intValue):
+    intValue = int(intValue)
+    if len(str(intValue)) == 10:
+        # 精确到秒
+        timeValue = time.localtime(intValue)
+        tempDate = time.strftime("%Y-%m-%d %H:%M:%S", timeValue)
+        datetimeValue = datetime.strptime(tempDate, "%Y-%m-%d %H:%M:%S")
+    elif 10 < len(str(intValue)) < 15:
+        # 精确到毫秒
+        k = len(str(intValue)) - 10
+        timestamp = datetime.fromtimestamp(intValue / (1 * 10 ** k))
+        datetimeValue = timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")
+    else:
+        return -1
+    return datetimeValue
 # ----------bt.xxx
 
-def save_order(order):
-    return
 
+def save_order(order, strategy, write=False):
+    """
+    目前功能暂时用于记录allocated_funds的变化, 通过获取的交易所响应, 计算当前订单的realized_PNL信息
+    """
+    if not write:
+        return
+    quantity = order['executedQty']
+    price = order['avgPrice']
+    order_time = order['updateTime']
+    side = order['side']
+    symbol = order['symbol']
+    order_time = intTodatetime(order_time)
+    # record = pd.read_csv('data//trading_record.csv')
+    df0 = \
+        {
+            'order_time': f'{order_time}',
+            'strategy': f'{strategy}',
+            'symbol': f'{symbol}',
+            'side': f'{side}',
+            'Price': f'{price}',
+            'quantity': quantity,
+        }
+    df0['order_time'] = pd.to_datetime(df0['order_time'])
+    direction = 1 if side == 'buy' else 0
+    try:
+        record = pd.read_csv(f'..//dataset//{strategy}_{symbol}_trading_record.csv')
+        record = pd.DataFrame(record)
+        record['order_time'] = pd.to_datetime(record['order_time'])
+        record.sort_values('order_time', inplace=True)
+        last_position = record.tail(1)['position']
+        last_price = record.tail(1)['price']
+        order_type = 'open' if last_position + quantity != 0 else 'close'
+        trade_info = {
+                    'position': last_position + quantity * direction,
+                    'order_type': f'{order_type}_{side}',
+                    'pnl': quantity * (price - last_price),
+                    'kret': price / last_price - 1
+                    }
+        df0.update(trade_info)
+        df0 = pd.DataFrame(df0)
+        df = record.append(df0)
+        df.to_csv(f'..//dataset//{strategy}_{symbol}_trading_record.csv', mode='a')
+        return
+        # print(df)
+    except FileNotFoundError:
+        with open(f'..//dataset//{strategy}_{symbol}_trading_record.csv', "w") as empty_csv:
+            csv_columns = ['order_time', 'strategy', 'symbol', 'side', 'Price', 'quantity', 'position', 'order_type', 'pnl']
+            writer = csv.DictWriter(empty_csv, fieldnames=csv_columns)
+            writer.writeheader()
+            trade_info = {
+                        'position': quantity * direction,
+                        'order_type': f'open_{side}',
+                        'pnl': 0,
+                        'kret': 0
+                        }
+            df = df0.update(trade_info)
+            df = pd.DataFrame(df)
+            # df.to_csv(f'..//dataset//{strategy}_{symbol}_trading_record.csv', mode='a')
+            for data in df:
+                writer.writerow(data)
+            # now you have an empty file already
+            empty_csv.close()  # or write something to it already
+            return
 
 
 def plttohtml(plt, filename):

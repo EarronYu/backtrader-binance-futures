@@ -3,7 +3,7 @@
 import time
 import backtrader as bt
 import datetime as dt
-
+import yaml
 from ccxtbt import CCXTStore
 from config import BINANCE, ENV, PRODUCTION, COIN_TARGET, COIN_REFER, DEBUG
 
@@ -12,6 +12,8 @@ from sizer.percent import FullMoney
 from strategies.basic_rsi import BasicRSI
 from utils import print_trade_analysis, print_sqn, send_telegram_message
 
+from PrepareCSV import prepare_data
+import toolkit as tk
 
 def main():
     cerebro = bt.Cerebro(quicknotify=True)
@@ -47,38 +49,42 @@ def main():
                 }
             }
         }
-
-        # store.set_sandbox_mode(True)
         broker = store.getbroker(broker_mapping=broker_mapping)
         cerebro.setbroker(broker)
 
         hist_start_date = dt.datetime.utcnow() - dt.timedelta(minutes=3000)
-        datakl = store.getdata(
-            dataname='%s/%s' % (COIN_TARGET, COIN_REFER),
-            name='%s%s' % (COIN_TARGET, COIN_REFER),
-            timeframe=bt.TimeFrame.Minutes,
-            fromdate=hist_start_date,
-            compression=1,
-            ohlcv_limit=10000
-        )
-        dataha = datakl.clone()
-        dataha.addfilter(bt.filters.HeikinAshi(dataha))
-        # Add the feed
-        cerebro.adddata(datakl, name='Kline')
-        cerebro.adddata(dataha, name='Heikin')
+        with open('dataset/symbol_config.yaml', mode='r') as f:
+            symbol_config = f.read()
+            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
+            for symbol in symbol_config.keys():
+                datakl = store.getdata(
+                    dataname=f'{symbol}',
+                    name=f'{symbol}',
+                    timeframe=bt.TimeFrame.Minutes,
+                    fromdate=hist_start_date,
+                    compression=1,
+                    ohlcv_limit=10000
+                )
+                dataha = datakl.clone()
+                dataha.addfilter(bt.filters.HeikinAshi(dataha))
+                # Add the feed
+                cerebro.adddata(datakl, name=f'{symbol}_Kline')
+                cerebro.adddata(dataha, name=f'{symbol}_Heikin')
 
     else:  # Backtesting with CSV file
-        data = CustomDataset(
-            name=COIN_TARGET,
-            dataname="dataset/binance_nov_18_mar_19_btc.csv",
-            timeframe=bt.TimeFrame.Minutes,
-            fromdate=dt.datetime(2018, 9, 20),
-            todate=dt.datetime(2019, 3, 13),
-            nullvalue=0.0
-        )
-
-        cerebro.resampledata(data, timeframe=bt.TimeFrame.Minutes, compression=1)
-
+        with open('dataset/symbol_config.yaml', mode='r') as f:
+            symbol_config = f.read()
+            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
+            for symbol in symbol_config.keys():
+                t0str, t9str = '2021-09-01', '2021-10-01'
+                fgCov = False
+                df = prepare_data(t0str, t9str, symbol, fgCov=fgCov, prep_new=True, mode='test')
+                datakl = tk.pools_get4df(df, t0str, t9str, fgCov=fgCov)
+                dataha = datakl.clone()
+                dataha.addfilter(bt.filters.HeikinAshi(dataha))
+                cerebro.resampledata(datakl, name=f'{symbol}_10m_Kline', timeframe=bt.TimeFrame.Minutes, compression=10)
+                cerebro.resampledata(dataha, name=f'{symbol}_10m_Heikin', timeframe=bt.TimeFrame.Minutes, compression=10)
+            f.close()
         broker = cerebro.getbroker()
         broker.setcommission(commission=0.0004, name=COIN_TARGET)  # Simulating exchange fee
         broker.setcash(100000.0)
@@ -86,24 +92,27 @@ def main():
 
     # Analyzers to evaluate trades and strategies
     # SQN = Average( profit / risk ) / StdDev( profit / risk ) x SquareRoot( number of trades )
-    cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="ta")
-    cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
+    # cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="ta")
+    # cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
 
     # Include Strategy
-    cerebro.addstrategy(BasicRSI)
-
+    strategy = []
+    strategy_list = []
+    for symbol in symbol_config.keys():
+        strategy_list = list(set(strategy).union(set(symbol.keys())))
+    for strategy in strategy_list:
+        cerebro.addstrategy(strategy)
+    # cerebro.broker.set_checksubmit(False)
     # Starting backtrader bot
     initial_value = cerebro.broker.getvalue()
     print('Starting Portfolio Value: %.2f' % initial_value)
     result = cerebro.run()
-
     # Print analyzers - results
     final_value = cerebro.broker.getvalue()
     print('Final Portfolio Value: %.2f' % final_value)
     print('Profit %.3f%%' % ((final_value - initial_value) / initial_value * 100))
     print_trade_analysis(result[0].analyzers.ta.get_analysis())
     print_sqn(result[0].analyzers.sqn.get_analysis())
-
     if DEBUG:
         cerebro.plot()
 

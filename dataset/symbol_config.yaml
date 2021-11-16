@@ -1,0 +1,36 @@
+BNBUSDT:
+  BasicRSI:
+    5m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
+    10m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
+    20m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
+    40m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
+BTCUSDT:
+  BasicRSI:
+    5m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
+    10m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
+    20m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
+    40m:
+      allocated_ratio: 0.3
+      ema_fast_window: 10
+      ema_slow_window: 200
