@@ -10,16 +10,6 @@ import toolkit as tk
 
 
 class BasicRSI(StrategyBase):
-    with open('../dataset/symbol_config.yaml', 'r') as f:
-        symbol_config = f.read()
-        symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
-        f.close()
-    params = dict(
-        rebal_monthday=[1],  # 每月1日执行再平衡
-        num_volume=100,  # 成交量取前100名
-        ema_fast_window=10,
-        ema_slow_window=200
-    )
 
     def __init__(self):
         StrategyBase.__init__(self)
@@ -29,13 +19,31 @@ class BasicRSI(StrategyBase):
         # 0号是指数，不进入选股池，从1号往后进入股票池
         self.stocks = self.datas[1:]
 
-        self.dict = dict()
+        with open('../dataset/symbol_config.yaml', 'r') as f:
+            symbol_config = f.read()
+            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
+            f.close()
+
+        self.params = dict()
+        self.ind = dict()
         for i, d in enumerate(self.datas):
-            if i % 2 == 0:
-                self.dict[d] = dict()
-                self.dict[d]['greater'] = self.datas[i+1] # 取datas中基数的序列，具体取哪个要视datas当中的内容为准
-                self.dict[d]['...'] = 100
-                self.dict[d]['buy'] = bt.indicators.CrossUp(d.close, self.dict[d]['...'], 100)
+            # if i % 2 == 0:
+            self.params[d] = dict()
+            self.params[d]['ema_fast_window'] = 10
+            self.params[d]['ema_slow_window'] = 200
+            # params = dict(
+            #     rebal_monthday=[1],  # 每月1日执行再平衡
+            #     num_volume=100,  # 成交量取前100名
+            #     ema_fast_window=10,
+            #     ema_slow_window=200
+            # )
+            # if i % 2 == 0:
+            self.ind[d] = dict()
+            # self.dict[d]['greater'] = self.datas[i+1]  # 取datas中基数的序列，具体取哪个要视datas当中的内容为准, 选出大周期
+            self.ind[d]['ema_fast'] = bt.indicators.EMA(data=d, period=self.params[d]['ema_fast_window'])
+            self.ind[d]['ema_slow'] = bt.indicators.EMA(period=self.params[d]['ema_slow_window'])
+            self.ind[d]['rsi'] = bt.indicators.RelativeStrengthIndex()
+
         # 定时器
         self.add_timer(
             when=bt.Timer.SESSION_START,
@@ -43,10 +51,10 @@ class BasicRSI(StrategyBase):
             monthcarry=True,  # 若再平衡日不是交易日，则顺延触发notify_timer
         )
 
-        self.ema_fast = bt.indicators.EMA(period=self.p.period_ema_fast)
-        self.ema_slow = bt.indicators.EMA(period=self.p.period_ema_slow)
-        self.rsi = bt.indicators.RelativeStrengthIndex()
-        self.ema_fast.plotinfo.plot = False
+        # self.ema_fast = bt.indicators.EMA(period=self.p.period_ema_fast)
+        # self.ema_slow = bt.indicators.EMA(period=self.p.period_ema_slow)
+        # self.rsi = bt.indicators.RelativeStrengthIndex()
+        # self.ema_fast.plotinfo.plot = False
 
     def notify_timer(self, timer, when, *args, **kwargs):
         # 只在5，9，11月的1号执行再平衡
@@ -59,88 +67,102 @@ class BasicRSI(StrategyBase):
             # 检查订单order是否完成
             # 注意: 如果现金不足，经纪人broker会拒绝订单reject order
             # 可以修改相关参数，调整进行空头交易
-            if order.isbuy():
-                self.last_operation = "long"
-                self.reset_order_indicators()
-                if ENV == DEVELOPMENT:
-                    # print(order.executed.__dict__)
-                    self.log('SHORT EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                             (order.executed.price,
-                              order.executed.value,
-                              order.executed.comm), fgprint=True)
-                if ENV == PRODUCTION:
-                    print(order.__dict__)
-                    self.log('LONG EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                             (order.ccxt_order['average'],
-                              float(order.ccxt_order['info']['cumQuote']),
-                              float(order.ccxt_order['info']['cumQuote']) * 0.0004), send_telegram=False, fgprint=True)
-                    tk.save_order(order, strategy=self.__class__.__name__, write=False)
-                    # self.buyprice = order.ccxt_order['average']
-                    # self.buycomm = order.ccxt_order['cost'] * 0.0004
-                if ENV == DEVELOPMENT:
-                    print('order info: ', order.__dict__)
-            if order.issell():
-                self.last_operation = "short"
-                self.reset_order_indicators()
-                if ENV == DEVELOPMENT:
-                    # print(order.executed.__dict__)
-                    self.log('SHORT EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                             (order.executed.price,
-                              order.executed.value,
-                              order.executed.comm), fgprint=True)
-                if ENV == PRODUCTION:
-                    print(order.__dict__)
-                    self.log('SHORT EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                             (order.ccxt_order['average'],
-                              float(order.ccxt_order['info']['cumQuote']),
-                              float(order.ccxt_order['info']['cumQuote']) * 0.0004), send_telegram=False, fgprint=True)
-                    tk.save_order(order, strategy=self.__class__.__name__, write=False)
-                    # self.sellprice = order.ccxt_order['average']
-                    # self.sellcomm = order.ccxt_order['cost'] * 0.0004
-                if ENV == DEVELOPMENT:
-                    print('order info: ', order.__dict__)
-
-            self.bar_executed = len(self)
+            for i, d in enumerate(self.datas):
+                if order.isbuy():
+                    self.last_operation[d] = "long"
+                    self.reset_order_indicators()
+                    if ENV == DEVELOPMENT:
+                        # print(order.executed.__dict__)
+                        self.log('SHORT EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
+                                 (order.executed.price,
+                                  order.executed.value,
+                                  order.executed.comm), fgprint=True)
+                    if ENV == PRODUCTION:
+                        print(order.__dict__)
+                        self.log('LONG EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
+                                 (order.ccxt_order['average'],
+                                  float(order.ccxt_order['info']['cumQuote']),
+                                  float(order.ccxt_order['info']['cumQuote']) * 0.0004), send_telegram=False, fgprint=True)
+                        tk.save_order(order, strategy=self.__class__.__name__, write=False)
+                        # self.buyprice = order.ccxt_order['average']
+                        # self.buycomm = order.ccxt_order['cost'] * 0.0004
+                    if ENV == DEVELOPMENT:
+                        print('order info: ', order.__dict__)
+                if order.issell():
+                    self.last_operation[d] = "short"
+                    self.reset_order_indicators()
+                    if ENV == DEVELOPMENT:
+                        # print(order.executed.__dict__)
+                        self.log('SHORT EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
+                                 (order.executed.price,
+                                  order.executed.value,
+                                  order.executed.comm), fgprint=True)
+                    if ENV == PRODUCTION:
+                        print(order.__dict__)
+                        self.log('SHORT EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
+                                 (order.ccxt_order['average'],
+                                  float(order.ccxt_order['info']['cumQuote']),
+                                  float(order.ccxt_order['info']['cumQuote']) * 0.0004), send_telegram=False, fgprint=True)
+                        tk.save_order(order, strategy=self.__class__.__name__, write=False)
+                        # self.sellprice = order.ccxt_order['average']
+                        # self.sellcomm = order.ccxt_order['cost'] * 0.0004
+                    if ENV == DEVELOPMENT:
+                        print('order info: ', order.__dict__)
+                self.bar_executed = len(self)
         # Sentinel to None: new orders allowed
         self.order = None
 
-    def next(self):
+    def update_indicators(self):
+        # self.profit = dict()
         for i, d in enumerate(self.datas):
-            dt, dn = self.datetime.datetime(), d.__name
-            pos = self.getposition(d).size
-            if not pos:
-                self.order = self.buy(d)
-                print(f'买买买{dt}, {dn}')
-            else:
-                self.order = self.sell(d)
-                print('卖卖卖')
+            self.profit[d] = 0
+            """
+            这里还需要改
+            """
+            # dt, dn = self.datetime.datetime(), d.__name
+            # pos = self.getposition(d).size
+            if self.buy_price_close[d] and self.buy_price_close[d] > 0:
+                self.profit[d] = float(self.d.close[0] - self.buy_price_close[d]) / self.buy_price_close[d]
+            if self.sell_price_close[d] and self.sell_price_close[d] > 0:
+                self.profit[d] = float(self.sell_price_close[d] - self.d.close[0]) / self.sell_price_close[d]
+
+    def next(self):
         self.update_indicators()
         if self.status != "LIVE" and ENV == PRODUCTION:  # waiting for live status in production
             return
         if self.order:  # waiting for pending order
             return
-        # stop Loss
-        if self.profit < -0.03:
-            self.log("STOP LOSS: percentage %.3f %%" % self.profit, fgprint=False)
-            if self.last_operation == "long":
-                self.order = self.close_short()
-            if self.last_operation == "short":
-                self.order = self.close_short()
-
-        if self.last_operation != "long":
-            if self.rsi < 30 and self.ema_fast > self.ema_slow:
-                if not self.position:
-                    self.order = self.long()
-                else:
-                    self.order = self.close()
-                    self.order = self.long()
-        if self.last_operation != "short":
-            if self.rsi > 70:
-                if not self.position:
-                    self.order = self.short()
-                else:
-                    self.order = self.close()
-                    self.order = self.short()
+        for i, d in enumerate(self.datas):
+            # dt, dn = self.datetime.datetime(), d.__name
+            pos = self.getposition(d).size
+            # if not pos:
+            # self.order = self.buy(d)
+            # print(f'买买买{dt}, {dn}')
+            if self.last_operation[d] != "long":
+                if self.ind[d]['rsi'] < 30 and self.ind[d]['ema_fast'] > self.ind[d]['ema_slow']:
+                    if not pos:
+                        self.order = self.long(d)
+                    else:
+                        self.order = self.close(d)
+                        self.order = self.long(d)
+            if self.last_operation[d] != "short":
+                if self.rsi > 70:
+                    if not pos:
+                        self.order = self.short(d)
+                    else:
+                        self.order = self.close(d)
+                        self.order = self.short(d)
+            else:
+                if pos:
+                    if self.profit[d] < -0.03:
+                        self.log("STOP LOSS: percentage %.3f %%" % self.profit[d], fgprint=False)
+                        if self.last_operation[d] == "long":
+                            self.order = self.close_short(d)
+                        if self.last_operation[d] == "short":
+                            self.order = self.close_short(d)
+                        # self.order = self.sell(d)
+                        # print('卖卖卖')
+                        # stop Loss
 
     def rebalance_portfolio(self):
         # 从指数取得当前日期

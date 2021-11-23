@@ -22,27 +22,27 @@ class StrategyBase(bt.Strategy):
         self.sellcomm = None
 
         self.order = None
-        self.last_operation = None
+        self.last_operation = dict()
         self.status = "DISCONNECTED"
         self.bar_executed = 0
 
-        self.buy_price_close = None
-        self.sell_price_close = None
+        self.buy_price_close = dict()
+        self.sell_price_close = dict()
 
         self.soft_sell = False
         self.hard_sell = False
         self.soft_buy = False
         self.hard_buy = False
 
-        self.profit = 0
+        self.profit = dict()
 
         self.log("Base strategy initialized", fgprint=True)
 
     def reset_order_indicators(self):
         self.soft_sell = False
         self.hard_sell = False
-        self.buy_price_close = None
-        self.sell_price_close = None
+        self.buy_price_close = dict()
+        self.sell_price_close = dict()
         self.soft_buy = False
         self.hard_buy = False
 
@@ -67,27 +67,19 @@ class StrategyBase(bt.Strategy):
             self.log('LONG EXPIRED', send_telegram=False, fgprint=True)
 
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
-            self.log('Order Canceled/Margin/Rejected: Status %s - %s' % (order.Status[order.status],
-                                                                         self.last_operation), send_telegram=False,
-                     fgprint=True)
-
-    def update_indicators(self):
-        self.profit = 0
-        if self.buy_price_close and self.buy_price_close > 0:
-            self.profit = float(self.kl.close[0] - self.buy_price_close) / self.buy_price_close
-        if self.sell_price_close and self.sell_price_close > 0:
-            self.profit = float(self.sell_price_close - self.kl.close[0]) / self.sell_price_close
+            # return
+            for i, d in enumerate(self.datas):
+                self.log('Order Canceled/Margin/Rejected: Status %s - %s' % (order.Status[order.status],
+                                                                             self.last_operation[d]), send_telegram=False,
+                         fgprint=True)
 
     def short(self, data=None):
-        if self.last_operation == "short":
+        if self.last_operation[data] == "short":
             return
-
         if isinstance(data, str):
             data = self.getdatabyname(data)
-
         data = data if data is not None else self.datas[0]
-        self.sell_price_close = data.close[0]
-
+        self.sell_price_close[data] = data.close[0]
         price = data.close[0]
 
         if ENV == DEVELOPMENT:
@@ -103,15 +95,13 @@ class StrategyBase(bt.Strategy):
         return self.sell(data=data, size=amount)
 
     def long(self, data=None):
-        if self.last_operation == "long":
+        if self.last_operation[data] == "long":
             return
-
         if isinstance(data, str):
             data = self.getdatabyname(data)
-
         data = data if data is not None else self.datas[0]
         # self.log("Buy ordered: $%.2f" % self.data0.close[0], True)
-        self.buy_price_close = data.close[0]
+        self.buy_price_close[data] = data.close[0]
         price = data.close[0]
 
         if ENV == DEVELOPMENT:
@@ -130,7 +120,7 @@ class StrategyBase(bt.Strategy):
             data = self.getdatabyname(data)
         elif data is None:
             data = self.data
-        if self.last_operation == "long":
+        if self.last_operation[data] == "long":
             if ENV == DEVELOPMENT:
                 self.log("close long ordered: $%.2f" % data.close[0], fgprint=True)
                 return self.close(data=data)
@@ -142,7 +132,7 @@ class StrategyBase(bt.Strategy):
             data = self.getdatabyname(data)
         elif data is None:
             data = self.data
-        if self.last_operation == "short":
+        if self.last_operation[data] == "short":
             if ENV == DEVELOPMENT:
                 self.log("close short ordered: $%.2f" % data.close[0], fgprint=True)
                 return self.close(data=data)

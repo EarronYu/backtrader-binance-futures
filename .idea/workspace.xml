@@ -2,15 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/PrepareCSV.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PRODUCTION.py" beforeDir="false" afterPath="$PROJECT_DIR$/PRODUCTION.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataset/BNB.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/dataset/symbol_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/strategies/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/strategies/base.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/strategies/basic_rsi.py" beforeDir="false" afterPath="$PROJECT_DIR$/strategies/basic_rsi.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.md" beforeDir="false" afterPath="$PROJECT_DIR$/test.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toolkit.py" beforeDir="false" afterPath="$PROJECT_DIR$/toolkit.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,6 +167,7 @@
       <workItem from="1636962790643" duration="18054000" />
       <workItem from="1637035091502" duration="1281000" />
       <workItem from="1637036388846" duration="21531000" />
+      <workItem from="1637629905577" duration="9174000" />
     </task>
     <servers />
   </component>
