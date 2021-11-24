@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/strategies/basic_rsi.py" beforeDir="false" afterPath="$PROJECT_DIR$/strategies/basic_rsi.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/walkforward.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/backtrader-binance-bot-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/backtrader-binance-bot-master.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WFA.py" beforeDir="false" afterPath="$PROJECT_DIR$/WFA.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,7 +70,7 @@
       <recent name="D:\x7498\Documents\GitHub\binance-futures\dataset" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.PRODUCTION (1)">
+  <component name="RunManager" selected="Python tests.Doctests in walkforward">
     <configuration name="PRODUCTION (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="backtrader-binance-bot-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -133,8 +137,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Doctests in walkforward" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="backtrader-binance-bot-master" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/walkforward.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Doctests in walkforward" />
         <item itemvalue="Python.PRODUCTION (1)" />
         <item itemvalue="Python.config" />
         <item itemvalue="Python.PRODUCTION" />
@@ -168,7 +192,8 @@
       <workItem from="1637629905577" duration="9174000" />
       <workItem from="1637716691719" duration="1088000" />
       <workItem from="1637720358170" duration="2589000" />
-      <workItem from="1637725973282" duration="531000" />
+      <workItem from="1637725973282" duration="566000" />
+      <workItem from="1637738513063" duration="3141000" />
     </task>
     <servers />
   </component>
@@ -181,5 +206,6 @@
     <SUITE FILE_PATH="coverage/binance_futures$config.coverage" NAME="config Coverage Results" MODIFIED="1636717475228" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/binance_futures$PRODUCTION__1_.coverage" NAME="PRODUCTION (1) Coverage Results" MODIFIED="1636971856486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/backtrader_binance_bot_master$main.coverage" NAME="main Coverage Results" MODIFIED="1636653257461" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/basic_rsi_py$Doctests_in_walkforward.coverage" NAME="Doctests in walkforward Coverage Results" MODIFIED="1637741788990" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
