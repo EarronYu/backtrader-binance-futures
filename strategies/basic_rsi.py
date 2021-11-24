@@ -19,15 +19,11 @@ class BasicRSI(StrategyBase):
         # 0号是指数，不进入选股池，从1号往后进入股票池
         self.stocks = self.datas[1:]
 
-        with open('../dataset/symbol_config.yaml', 'r') as f:
-            symbol_config = f.read()
-            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
-            f.close()
-
         self.params = dict()
         self.ind = dict()
         for i, d in enumerate(self.datas):
             # if i % 2 == 0:
+            self.uodate_params(strategy=self.__class__.__name__, data=d)
             self.params[d] = dict()
             self.params[d]['ema_fast_window'] = 10
             self.params[d]['ema_slow_window'] = 200
@@ -56,10 +52,19 @@ class BasicRSI(StrategyBase):
         # self.rsi = bt.indicators.RelativeStrengthIndex()
         # self.ema_fast.plotinfo.plot = False
 
-    def notify_timer(self, timer, when, *args, **kwargs):
-        # 只在5，9，11月的1号执行再平衡
-        if self.data0.datetime.date(0).month in [5, 9, 11]:
-            self.rebalance_portfolio()  # 执行再平衡
+    # def notify_timer(self, timer, when, *args, **kwargs):
+    #     # 只在5，9，11月的1号执行再平衡
+    #     if self.data0.datetime.date(0).month in [5, 9, 11]:
+    #         self.rebalance_portfolio()  # 执行再平衡
+
+    def uodate_params(self, strategy, data):
+        with open('../dataset/symbol_config.yaml', 'r') as f:
+            symbol_config = f.read()
+            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
+            param = data.replace('USDT', f'USDT_{strategy}')
+            param = param.remove('_Kline')
+            f.close()
+        return
 
     def notify_order(self, order):
         StrategyBase.notify_order(self, order)
