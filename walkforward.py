@@ -235,7 +235,7 @@ class AcctStats(bt.Analyzer):
 start = dt.datetime(2018, 1, 1)
 end = dt.datetime(2020, 10, 31)
 # Different stocks from past posts because of different data source (no plot for NTDOY)
-symbols = ["APPL", "GOOG", "MSFT", "AMZN", "YHOO", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"]
+symbols = ["BTC-USD", "ETH-USD", "BNB-USD"]
 datafeeds = {s: web.DataReader(s, "yahoo", start, end) for s in symbols}
 for df in datafeeds.values():
     df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
@@ -243,7 +243,7 @@ for df in datafeeds.values():
 
 cerebro = bt.Cerebro(stdstats=False)
 
-plot_symbols = ["APPL", "GOOG", "NVDA"]
+plot_symbols = ["BTC-USD", "ETH-USD", "BNB-USD"]
 is_first = True
 # plot_symbols = []
 for s, df in datafeeds.items():
