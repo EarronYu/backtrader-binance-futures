@@ -23,10 +23,10 @@ class BasicRSI(StrategyBase):
         self.ind = dict()
         for i, d in enumerate(self.datas):
             # if i % 2 == 0:
-            self.uodate_params(strategy=self.__class__.__name__, data=d)
+            strategy_params = self.uodate_params(strategy=self.__class__.__name__, data=d)
             self.params[d] = dict()
-            self.params[d]['ema_fast_window'] = 10
-            self.params[d]['ema_slow_window'] = 200
+            self.params[d]['ema_fast_window'] = strategy_params['ema_fast_window']
+            self.params[d]['ema_slow_window'] = strategy_params['ema_slow_window']
             # params = dict(
             #     rebal_monthday=[1],  # 每月1日执行再平衡
             #     num_volume=100,  # 成交量取前100名
@@ -63,8 +63,10 @@ class BasicRSI(StrategyBase):
             symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
             param = data.replace('USDT', f'USDT_{strategy}')
             param = param.remove('_Kline')
+            param = param.split('_')
+            strategy_params = symbol_config[param[0]][param[1]][param[2]]
             f.close()
-        return
+        return strategy_params
 
     def notify_order(self, order):
         StrategyBase.notify_order(self, order)
