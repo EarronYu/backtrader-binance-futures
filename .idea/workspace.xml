@@ -1,7 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="" />
+    <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/BCH/.15Min.csv.swp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/BCH/1Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/BCH/4Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/BTC/.15Min.csv.swp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/BTC/1Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/BTC/4Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/.15Min.csv.swp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/1Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/1_Min.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/3_Min.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/4Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/LTC/.15Min.csv.swp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/LTC/1Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Data/GDAX/LTC/4Hour.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WalkForward/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WalkForward/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WalkForward/WalkForwardWorksheet.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WalkForward/blackbox.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WalkForward/output.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WalkForward/walkforwardworksheet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,7 +63,9 @@
     <setting file="file://$USER_HOME$/anaconda3/Lib/site-packages/backtrader-1.9.76.123-py3.8.egg/backtrader/strategy.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectId" id="1zusera9P0kDyLkG8dQAq7gW7AG" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -55,6 +80,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\x7498\Documents\GitHub\backtrader-binance-futures" />
       <recent name="D:\x7498\Documents\GitHub\binance-futures" />
       <recent name="D:\x7498\Documents\GitHub\binance-futures\strategies" />
       <recent name="D:\x7498\Downloads\backtrader-binance-bot-master (1)\backtrader-binance-bot-master" />
@@ -64,7 +90,7 @@
       <recent name="D:\x7498\Documents\GitHub\binance-futures\dataset" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in walkforward">
+  <component name="RunManager" selected="Python.walkforwardworksheet">
     <configuration name="PRODUCTION (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="backtrader-binance-bot-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -131,6 +157,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="walkforwardworksheet" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="backtrader-binance-bot-master" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/walkforwardworksheet.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Doctests in walkforward" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="backtrader-binance-bot-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -152,6 +200,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.walkforwardworksheet" />
         <item itemvalue="Python tests.Doctests in walkforward" />
         <item itemvalue="Python.PRODUCTION (1)" />
         <item itemvalue="Python.config" />
@@ -188,6 +237,7 @@
       <workItem from="1637720358170" duration="2589000" />
       <workItem from="1637725973282" duration="566000" />
       <workItem from="1637738513063" duration="6109000" />
+      <workItem from="1638173600046" duration="10171000" />
     </task>
     <servers />
   </component>
@@ -198,6 +248,7 @@
     <SUITE FILE_PATH="coverage/backtrader_binance_bot_master$config.coverage" NAME="config Coverage Results" MODIFIED="1636636900650" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/binance_futures$main.coverage" NAME="main Coverage Results" MODIFIED="1636718669894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/binance_futures$config.coverage" NAME="config Coverage Results" MODIFIED="1636717475228" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/basic_rsi_py$walkforwardworksheet.coverage" NAME="walkforwardworksheet Coverage Results" MODIFIED="1638186322275" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/binance_futures$PRODUCTION__1_.coverage" NAME="PRODUCTION (1) Coverage Results" MODIFIED="1636971856486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/backtrader_binance_bot_master$main.coverage" NAME="main Coverage Results" MODIFIED="1636653257461" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/basic_rsi_py$Doctests_in_walkforward.coverage" NAME="Doctests in walkforward Coverage Results" MODIFIED="1637742550889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
