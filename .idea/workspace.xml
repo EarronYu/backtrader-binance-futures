@@ -1,30 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/BCH/.15Min.csv.swp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/BCH/1Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/BCH/4Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/BTC/.15Min.csv.swp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/BTC/1Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/BTC/4Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/.15Min.csv.swp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/1Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/1_Min.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/3_Min.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/ETH/4Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/LTC/.15Min.csv.swp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/LTC/1Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Data/GDAX/LTC/4Hour.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WalkForward/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WalkForward/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WalkForward/WalkForwardWorksheet.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WalkForward/blackbox.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WalkForward/output.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WalkForward/walkforwardworksheet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-    </list>
+    <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -237,7 +214,7 @@
       <workItem from="1637720358170" duration="2589000" />
       <workItem from="1637725973282" duration="566000" />
       <workItem from="1637738513063" duration="6109000" />
-      <workItem from="1638173600046" duration="10171000" />
+      <workItem from="1638173600046" duration="10324000" />
     </task>
     <servers />
   </component>
