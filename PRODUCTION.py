@@ -15,6 +15,32 @@ from utils import print_trade_analysis, print_sqn, send_telegram_message
 from PrepareCSV import prepare_data
 import toolkit as tk
 
+
+class AcctValue(bt.Observer):
+    alias = ('Value',)
+    lines = ('value',)
+
+    plotinfo = {"plot": True, "subplot": True}
+
+    def next(self):
+        self.lines.value[0] = self._owner.broker.getvalue()  # Get today's account value (cash + stocks)
+
+
+class AcctStats(bt.Analyzer):
+    """A simple analyzer that gets the gain in the value of the account; should be self-explanatory"""
+
+    def __init__(self):
+        self.start_val = self.strategy.broker.get_value()
+        self.end_val = None
+
+    def stop(self):
+        self.end_val = self.strategy.broker.get_value()
+
+    def get_analysis(self):
+        return {"start": self.start_val, "end": self.end_val,
+                "growth": self.end_val - self.start_val, "return": self.end_val / self.start_val}
+
+
 def main():
     cerebro = bt.Cerebro(quicknotify=True)
 
@@ -82,8 +108,9 @@ def main():
                 datakl = tk.pools_get4df(df, t0str, t9str, fgCov=fgCov)
                 dataha = datakl.clone()
                 dataha.addfilter(bt.filters.HeikinAshi(dataha))
-                cerebro.resampledata(datakl, name=f'{symbol}_10m_Kline', timeframe=bt.TimeFrame.Minutes, compression=10)
-                cerebro.resampledata(dataha, name=f'{symbol}_10m_Heikin', timeframe=bt.TimeFrame.Minutes, compression=10)
+                cerebro.resampledata(datakl, name=f'{symbol}_10m', timeframe=bt.TimeFrame.Minutes, compression=10)
+                cerebro.resampledata(dataha, name=f'{symbol}_10m_Heikin', timeframe=bt.TimeFrame.Minutes,
+                                     compression=10)
             f.close()
         broker = cerebro.getbroker()
         broker.setcommission(commission=0.0004, name=COIN_TARGET)  # Simulating exchange fee

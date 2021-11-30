@@ -49,15 +49,17 @@ SQN: 1.75
 
 ## 至今的所有修改进度
 
-20211129 
+20211130 
 多策略部分除了分配持仓比例部分未写好其它部分已经完全搞定（还未debug）
 
 目前能加入多币种多时间周期（未debug）
 
-walk forward analyze 完全照搬 Ugur Akyol‘s WalkForwardWorkSheet，目前正在阅读代码还未完全的套用进框架。
+将原先的production.py复制了出来, 需要参照OptStrategy来要写成能够用来前进式优化的框架WFO
 
-CURTIS MILLER'S walk forward analyze 我也正在看，但不知道跟Akyol两者之间谁更好
+保留原先OptStrategy, 作为单策略优化的框架
 
-当WFA的回测写好之后甚至不需要将其加入实盘框架，本地手动回测就好，毕竟服务器的计算能力是真的无法承担多策略不同参数的寻优
+需要将TestStrategy修改为一次能够检验多策略, 多数据源的框架
 
-接触到了新的优化模块blackbox
+Production实盘框架中的WFO功能替换为给用户发送回测任务, 手动回测优化
+
+接触到了新的优化模块blackbox, 还未试用

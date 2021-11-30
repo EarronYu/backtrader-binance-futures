@@ -21,7 +21,7 @@ def prepare_data(time0, time9, symbol, fgCov=False, prep_new=True, mode='test'):
                 df0.set_index('datetime', drop=True, inplace=True)
                 df0.index = pd.to_datetime(df0.index, format='%Y-%m-%d %H:%M:%S')
                 df0.sort_index(ascending=True, inplace=True)
-            except Exception:
+            except:
                 time5 = time5 + datetime.timedelta(days=1)
                 file = path + str(time5) + '//' + str(time5) + '_' + symbol + '_1m.csv'
                 df0 = pd.read_csv(file)

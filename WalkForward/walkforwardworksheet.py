@@ -229,36 +229,6 @@ def RunBackTest(coin_name, candle_freq, capital, start_timestamp, end_timestamp,
             , 'trade_analysis': {}, 'value_anlaysis': []}
 
 
-tstart = time.mktime(time.strptime("20.01.2018 00:00:00", "%d.%m.%Y %H:%M:%S"));
-tend = time.mktime(time.strptime("10.03.2019 11:05:02", "%d.%m.%Y %H:%M:%S"));
-
-interval_params_one_time = time.mktime(time.strptime("01.02.2019 21:05:02", "%d.%m.%Y %H:%M:%S"));
-interval_params_one = {}
-interval_params_one['linear_reg_length'] = 300
-
-interval_params_two_time = tend
-interval_params_two = {}
-interval_params_two['linear_reg_length'] = 300
-
-params = {}
-params['interval_params'] = [(interval_params_one_time, interval_params_one), \
-                             (interval_params_two_time, interval_params_two)]
-
-params['commision'] = 0
-params['slippage'] = 0
-
-max_lookback_buffer_param = max(interval_params_one.values())
-needed_lookback_buffer_in_seconds = max_lookback_buffer_param * candle_freq_to_seconds_map[candle_freq]
-
-start_date_with_buffer = tstart - needed_lookback_buffer_in_seconds
-
-limitedEntryTestResult = RunBackTest(coin_name, candle_freq, 200000.0, start_date_with_buffer, tend, params, True, True)
-
-print(limitedEntryTestResult['win_ratio'])
-print('PnL: ' + str(limitedEntryTestResult['percentage_pnl']) + '%')
-print(limitedEntryTestResult['sharperatio'])
-
-
 def get_params_to_optimize_ranges(optimization_params, tstart, tend):
     a = optimization_params['linear_reg_length']
     b = [tstart, tstart]
@@ -323,7 +293,7 @@ def BlackBoxParallelWalkForwardAnalysis(start_date, end_date, optimization_perio
         print("testing start date: " + str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(testing_start_date))))
         print("testing end date: " + str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(testing_end_date))))
 
-        if (unanchored):
+        if unanchored:
             optimization_start_date += out_of_sample_period
 
         optimization_end_date += out_of_sample_period
@@ -430,14 +400,14 @@ def generateAlternateOutOfSampleResultsWithInterval(optimized_params_list, out_o
                             "_" + out_of_sample_end_date_key
 
         # Run the out of sample Period with the optimized params
-        OutOfSampleResults = RunBackTest(coin_name \
-                                         , candle_freq \
-                                         , 200000.0 \
-                                         , out_of_sample_start_date_with_buffer \
-                                         , out_of_sample_end_date \
-                                         , optimized_params_for_this_run \
-                                         , shouldPlot \
-                                         , False)
+        OutOfSampleResults = RunBackTest(coin_name,
+                                         candle_freq,
+                                         200000.0,
+                                         out_of_sample_start_date_with_buffer,
+                                         out_of_sample_end_date,
+                                         optimized_params_for_this_run,
+                                         shouldPlot,
+                                         False)
         print("The interval end dates and params are: ")
         for param in out_of_sample_interval_params_for_this_run:
             print(str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(param[0]))), param[1])
@@ -457,6 +427,36 @@ def generateAlternateOutOfSampleResultsWithInterval(optimized_params_list, out_o
 tstart = time.mktime(time.strptime("20.01.2018 00:00:00", "%d.%m.%Y %H:%M:%S"));
 tend = time.mktime(time.strptime("10.03.2019 11:05:02", "%d.%m.%Y %H:%M:%S"));
 
+interval_params_one_time = time.mktime(time.strptime("01.02.2019 21:05:02", "%d.%m.%Y %H:%M:%S"));
+interval_params_one = {}
+interval_params_one['linear_reg_length'] = 300
+
+interval_params_two_time = tend
+interval_params_two = {}
+interval_params_two['linear_reg_length'] = 300
+
+params = {}
+params['interval_params'] = [(interval_params_one_time, interval_params_one), \
+                             (interval_params_two_time, interval_params_two)]
+
+params['commision'] = 0
+params['slippage'] = 0
+
+max_lookback_buffer_param = max(interval_params_one.values())
+needed_lookback_buffer_in_seconds = max_lookback_buffer_param * candle_freq_to_seconds_map[candle_freq]
+
+start_date_with_buffer = tstart - needed_lookback_buffer_in_seconds
+
+limitedEntryTestResult = RunBackTest(coin_name, candle_freq, 200000.0, start_date_with_buffer, tend, params, True, True)
+
+print(limitedEntryTestResult['win_ratio'])
+print('PnL: ' + str(limitedEntryTestResult['percentage_pnl']) + '%')
+print(limitedEntryTestResult['sharperatio'])
+
+# exit()
+tstart = time.mktime(time.strptime("20.01.2018 00:00:00", "%d.%m.%Y %H:%M:%S"));
+tend = time.mktime(time.strptime("10.03.2019 11:05:02", "%d.%m.%Y %H:%M:%S"));
+
 optimization_period = timedelta(days=200).total_seconds()
 out_of_sample_period = timedelta(days=90).total_seconds()
 
@@ -467,15 +467,15 @@ optimization_params['linear_reg_length'] = [10, 1000]
 optimization_params['commision'] = 0.0005
 optimization_params['slippage'] = 0.001
 
-WalkForwardAnalysisResultsPNLAll_LastYear = BlackBoxParallelWalkForwardAnalysis(tstart \
-                                                                                , tend \
-                                                                                , optimization_period \
-                                                                                , out_of_sample_period \
-                                                                                , optimization_params \
-                                                                                , 100 \
-                                                                                , 100 \
-                                                                                , 4 \
-                                                                                , opt_fun)
+WalkForwardAnalysisResultsPNLAll_LastYear = BlackBoxParallelWalkForwardAnalysis(tstart,
+                                                                                tend,
+                                                                                optimization_period,
+                                                                                out_of_sample_period,
+                                                                                optimization_params,
+                                                                                100,
+                                                                                100,
+                                                                                4,
+                                                                                opt_fun)
 
 end_time = time.time()
 
