@@ -32,6 +32,8 @@ import collections
 import psutil as psu
 from functools import wraps
 import datetime as dt
+import pandas as pd
+import os
 import copy
 #
 import numpy as np
@@ -486,6 +488,91 @@ def pools_get4df(df, tim0str, tim9str, fgSort=True, fgCov=True):
     # print(data)
     # data.index = pd.to_datetime(df.index, format='%Y-%m-%dT%H:%M:%S.%fZ')
     return data
+
+
+def prepare_data(symbol, fromdt, todt, datapath=None):
+    """
+    :param symbol:
+    :param datapath: None
+    :param fromdt:
+    :param todt:
+    :return:
+    # prepare 1m backtesting dataq
+    """
+    # df9path = f'..//data//{symbol}_1m_{mode}.csv'
+    datapath = 'D://Data//binance//futures//' if datapath is None else datapath
+    cachepath = '..//data//'
+    filename = f'{symbol}_{fromdt}_{todt}_1m.csv'
+    if os.path.exists(cachepath+filename):  # check if .//Data// exist needed csv file
+        df = pd.read_csv(cachepath+filename)
+        df['openinterest'] = 0
+        df.sort_index(ascending=True, inplace=True)  # True：正序
+        df.index = pd.to_datetime(df.index, format='%Y-%m-%dT%H:%M:%S')
+        #
+        fromdt = None if fromdt == '' else dt.datetime.strptime(fromdt, '%Y-%m-%d')
+        todt = None if todt == '' else dt.datetime.strptime(todt, '%Y-%m-%d')
+        data = bt.feeds.GenericCSVData(
+            timeframe=bt.TimeFrame.Minutes,
+            compression=1,
+            dataname=df,
+            fromdate=fromdt,
+            todate=todt,
+            nullvalue=0.0,
+            dtformat='%Y-%m-%d %H:%M:%S',
+            tmformat='%H:%M:%S',
+            datetime=0,
+            open=1,
+            high=2,
+            low=3,
+            close=4,
+            volume=5,
+            openinterest=-1,
+            reverse=False)
+        #
+        # print(data)
+        # data.index = pd.to_datetime(df.index, format='%Y-%m-%dT%H:%M:%S.%fZ')
+        return data
+    else:  # prepare new file
+        fromdt = pd.to_datetime(fromdt)
+        fromdt = dt.datetime.date(fromdt)
+        todt = pd.to_datetime(todt)
+        todt = dt.datetime.date(todt)
+        reftime = fromdt
+        df9 = pd.DataFrame()
+        while reftime <= todt:
+            try:
+                file = datapath + str(reftime) + '//' + str(reftime) + '_' + symbol + '_1m.csv'
+                df0 = pd.read_csv(file)
+                df0['datetime'] = [x[:19] for x in df0['candle_begin_time']]
+                df0.set_index('datetime', drop=True, inplace=True)
+                df0.index = pd.to_datetime(df0.index, format='%Y-%m-%d %H:%M:%S')
+                df0.sort_index(ascending=True, inplace=True)
+            except Exception:
+                reftime = reftime + dt.timedelta(days=1)
+                file = datapath + str(reftime) + '//' + str(reftime) + '_' + symbol + '_1m.csv'
+                df0 = pd.read_csv(file)
+                df0['datetime'] = [x[:19] for x in df0['candle_begin_time']]
+                df0.set_index('datetime', drop=True, inplace=True)
+                df0.index = pd.to_datetime(df0.index, format='%Y-%m-%d %H:%M:%S')
+                df0.sort_index(ascending=True, inplace=True)
+            df9 = df9.append(df0)
+            df9.drop(columns=['candle_begin_time'], inplace=True)
+            reftime = reftime + dt.timedelta(days=1)
+        # print(df9)
+        # df9.reset_index(inplace=True)
+        # df9['candle_begin_time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        # as_list = df9['candle_begin_time'].tolist()
+        # for x in as_list:
+        #     if '.000' in str(x):
+        #         idx = as_list.index(x)
+        #         as_list[idx] = idx[0:8]
+        # df9.set_index(as_list, drop=True, inplace=True)
+
+        df9.sort_index(ascending=True, inplace=True)
+        df9.index = pd.to_datetime(df9.index, format='%Y-%m-%d %H:%M:%S')
+        data = bt.feeds.PandasData(dataname=df, fromdate=fromdt, todate=todt)
+        df9.to_csv(cachepath+filename)
+        return data
 
 
 def pools_get4flst(qx, rdat0, syblst, tim0str='', tim9str='', fgInx=False, fgPr=False, fgCov=True):

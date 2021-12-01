@@ -24,11 +24,13 @@ from config import BINANCE, ENV, PRODUCTION, COIN_TARGET, COIN_REFER, DEBUG
 from sizer.percent import FullMoney
 from utils import print_trade_analysis, print_sqn, send_telegram_message
 
+from strategies.BBKCBreak import BBKCBreak
+
 pd.set_option('display.max_rows', 10)
 pd.set_option('display.max_columns', 10)
 pd.set_option('display.width', 1000)
 
-globalparams = dict(strategy='long_short',  # if a different strategy is used
+globalparams = dict(strategy='BBKCBreak',  # if a different strategy is used
                     n_splits=20,  # how many chunks the data should have
                     fixed_length=True,
                     # by setting it False the training data will will grow over time, otherwise it will keep the size given under train_splits
@@ -37,10 +39,10 @@ globalparams = dict(strategy='long_short',  # if a different strategy is used
                     test_splits=1,  # how many splits should the data be tested on?
                     start=dt.datetime(2019, 1, 1),
                     end=dt.datetime(2021, 1, 1),
-                    symbols=["ETHUSDT", "BTCUSDT"],
-                    # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
+                    symbols="ETHUSDT",
+                    timeframe="15",  # unit is minutes
                     cash=1000,
-                    commission=0.0008,
+                    commission=0.0004,
                     coc='True',
                     num_evals=30,  # how often should the optimizer try to optimize
                     var1range=[1, 1.25],  # reasonable range within the optimization should happen (variable 1)
@@ -167,6 +169,19 @@ class TimeSeriesSplitImproved(TimeSeriesSplit):
             for test_start in test_starts:
                 yield (indices[:test_start],
                        indices[test_start:test_start + test_size])
+
+
+class MyBuySell(bt.observers.BuySell):
+    plotlines = dict(
+        buy=dict(marker='^', markersize=4.0, color='lime', fillstyle='full'),
+        sell=dict(marker='v', markersize=4.0, color='red', fillstyle='full')
+        #
+        # buy=dict(marker='$++$', markersize=12.0),
+        # sell=dict(marker='$--$', markersize=12.0)
+        #
+        # buy=dict(marker='$✔$', markersize=12.0),
+        # sell=dict(marker='$✘$', markersize=12.0)
+    )
 
 
 class CommInfoFractional(bt.CommissionInfo):
@@ -334,37 +349,37 @@ class SMACWalkForward(bt.Strategy):
 
 
 def main():
-    datafeeds = {s: web.DataReader(s, "yahoo", globalparams['start'], globalparams['end']) for s in
+    datafeeds = {s: tk.prepare_data(symbol=s, fromdt=globalparams['start'], todt=globalparams['end']) for s in
                  globalparams['symbols']}
 
     # resample to weekly data
 
-    for s, df in datafeeds.items():
-        '''
-        df['Date'] = pd.to_datetime(df['Date'])
-        df.set_index('Date', inplace=True)
-        df.sort_index(inplace=True)
-        '''
-
-        def take_first(array_like):
-            return array_like[0]
-
-        def take_last(array_like):
-            return array_like[-1]
-
-        ohlc_dict = {'High': 'max',
-                     'Low': 'min',
-                     'Open': take_first,
-                     'Close': take_last,
-                     'Adj Close': take_last,
-                     'Volume': 'sum'}
-
-        # datafeeds[s] = df.resample('W', loffset=pd.offsets.timedelta(days=-2)).agg(ohlc_dict).copy()  # to put the labels to Monday
-        datafeeds[s] = df.resample('W', offset='-2d').agg(ohlc_dict).copy()  # to put the labels to Monday
-        # Weekly resample
-
-    for df in datafeeds.values():
-        df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
+    # for s, df in datafeeds.items():
+    #     '''
+    #     df['Date'] = pd.to_datetime(df['Date'])
+    #     df.set_index('Date', inplace=True)
+    #     df.sort_index(inplace=True)
+    #     '''
+    #
+    #     def take_first(array_like):
+    #         return array_like[0]
+    #
+    #     def take_last(array_like):
+    #         return array_like[-1]
+    #
+    #     ohlc_dict = {'High': 'max',
+    #                  'Low': 'min',
+    #                  'Open': take_first,
+    #                  'Close': take_last,
+    #                  'Adj Close': take_last,
+    #                  'Volume': 'sum'}
+    #
+    #     # datafeeds[s] = df.resample('W', loffset=pd.offsets.timedelta(days=-2)).agg(ohlc_dict).copy()  # to put the labels to Monday
+    #     datafeeds[s] = df.resample('W', offset='-2d').agg(ohlc_dict).copy()  # to put the labels to Monday
+    #     # Weekly resample
+    #
+    # for df in datafeeds.values():
+    #     df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
 
     tscv = TimeSeriesSplitImproved(globalparams['n_splits'])
     split = tscv.split(datafeeds[globalparams['symbols'][0]], fixed_length=globalparams['fixed_length'],
@@ -374,26 +389,32 @@ def main():
 
     # Be prepared: this will take a while
     for train, test in split:
-
         # TRAINING
-
         # Optimize with optunity
         def runstrat(var1, var2):
             cerebro = bt.Cerebro(stdstats=False, maxcpus=None)
-            cerebro.addstrategy(eval(globalparams['strategy']), var1=var1,
+            cerebro.addstrategy(eval(globalparams['strategy']),
+                                var1=var1,
                                 var2=var2)  # toDO make the float int choice switchable
             cerebro.broker.setcash(globalparams['cash'])
             cerebro.broker.setcommission(globalparams['commission'])
-            for s, df in datafeeds.items():
-                data = bt.feeds.PandasData(dataname=df.iloc[train], name=s)  # Add a subset of data
+            for s, df in datafeeds.items():  # toDO 1201 进行到这里了
+                # data = bt.feeds.PandasData(dataname=df.iloc[train], name=s)  # Add a subset of data
                 # to the object that
                 # corresponds to training
-                cerebro.adddata(data)
+                dataha = data.clone()
+                dataha.addfilter(bt.filters.HeikinAshi(dataha))
+                tframes = dict(minutes=bt.TimeFrame.Minutes, days=bt.TimeFrame.Days, weeks=bt.TimeFrame.Weeks,
+                               months=bt.TimeFrame.Months, years=bt.TimeFrame.Years)
+                cerebro.resampledata(data, timeframe=tframes['minutes'], compression=1, name='Real')
+                cerebro.resampledata(dataha, timeframe=tframes['minutes'], compression=1, name='Heikin')
             cerebro.broker.set_coc(eval(globalparams['coc']))
             cerebro.run()
             return cerebro.broker.getvalue()  # ToDo make the variable that should be optimized flexible
 
-        opt = optunity.maximize(runstrat, num_evals=globalparams['num_evals'], var1=globalparams['var1range'],
+        opt = optunity.maximize(runstrat,
+                                num_evals=globalparams['num_evals'],
+                                var1=globalparams['var1range'],
                                 var2=globalparams['var2range'])
 
         optimal_pars, details, _ = opt
@@ -401,14 +422,15 @@ def main():
         tester = bt.Cerebro(stdstats=False, maxcpus=True)
         tester.broker.set_cash(globalparams['cash'])
         tester.broker.set_coc(eval(globalparams['coc']))
-        commission = 0.0004
-        comminfo = CommInfoFractional(commission=commission)
+        comminfo = CommInfoFractional(commission=globalparams['commission'])
         tester.broker.addcommissioninfo(comminfo)
-        tester.broker.setcommission(globalparams['commission'])
+        # tester.broker.setcommission(globalparams['commission'])
+        bt.observers.BuySell = MyBuySell
         tester.addanalyzer(bt.analyzers.SQN, _name="sqn")
         tester.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
         tester.addanalyzer(AcctStats)
         tester.addsizer(PropSizer)
+
         # tester.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
 
         # TESTING
@@ -485,86 +507,7 @@ def main():
     # print(f"Sharpe: {results[0].analyzers.sharperatio.get_analysis()['sharperatio']:.3f}")
 
     cerebro_wf.plot(iplot=True)
-    cerebro = bt.Cerebro(quicknotify=True)
-
-    if ENV == PRODUCTION:  # Live trading with Binance
-        broker_config = {
-            'apiKey': BINANCE.get("key"),
-            'secret': BINANCE.get("secret"),
-            'timeout': 5000,
-            'verbose': False,
-            'nonce': lambda: str(int(time.time() * 1000)),
-            'enableRateLimit': True,
-        }
-
-        store = CCXTStore(exchange='binanceusdm', currency=COIN_REFER, config=broker_config, retries=5, debug=False,
-                          sandbox=True)
-
-        broker_mapping = {
-            'order_types': {
-                bt.Order.Market: 'market',
-                bt.Order.Limit: 'limit',
-                bt.Order.Stop: 'stop-loss',
-                bt.Order.StopLimit: 'stop limit'
-            },
-            'mappings': {
-                'closed_order': {
-                    'key': 'status',
-                    'value': 'closed'
-                },
-                'canceled_order': {
-                    'key': 'status',
-                    'value': 'canceled'
-                }
-            }
-        }
-        broker = store.getbroker(broker_mapping=broker_mapping)
-        cerebro.setbroker(broker)
-
-        hist_start_date = dt.datetime.utcnow() - dt.timedelta(minutes=3000)
-        with open('dataset/symbol_config.yaml', mode='r') as f:
-            symbol_config = f.read()
-            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
-            for symbol in symbol_config.keys():
-                datakl = store.getdata(
-                    dataname=f'{symbol}',
-                    name=f'{symbol}',
-                    timeframe=bt.TimeFrame.Minutes,
-                    fromdate=hist_start_date,
-                    compression=1,
-                    ohlcv_limit=10000
-                )
-                dataha = datakl.clone()
-                dataha.addfilter(bt.filters.HeikinAshi(dataha))
-                # Add the feed
-                cerebro.adddata(datakl, name=f'{symbol}_Kline')
-                cerebro.adddata(dataha, name=f'{symbol}_Heikin')
-
-    else:  # Backtesting with CSV file
-        with open('dataset/symbol_config.yaml', mode='r') as f:
-            symbol_config = f.read()
-            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
-            for symbol in symbol_config.keys():
-                t0str, t9str = '2021-09-01', '2021-10-01'
-                fgCov = False
-                df = prepare_data(t0str, t9str, symbol, fgCov=fgCov, prep_new=True, mode='test')
-                datakl = tk.pools_get4df(df, t0str, t9str, fgCov=fgCov)
-                dataha = datakl.clone()
-                dataha.addfilter(bt.filters.HeikinAshi(dataha))
-                cerebro.resampledata(datakl, name=f'{symbol}_10m', timeframe=bt.TimeFrame.Minutes, compression=10)
-                cerebro.resampledata(dataha, name=f'{symbol}_10m_Heikin', timeframe=bt.TimeFrame.Minutes,
-                                     compression=10)
-            f.close()
-        broker = cerebro.getbroker()
-        broker.setcommission(commission=0.0004, name=COIN_TARGET)  # Simulating exchange fee
-        broker.setcash(100000.0)
-        cerebro.addsizer(FullMoney)
-
-    # Analyzers to evaluate trades and strategies
-    # SQN = Average( profit / risk ) / StdDev( profit / risk ) x SquareRoot( number of trades )
-    # cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="ta")
-    # cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
-
+    # cerebro = bt.Cerebro(quicknotify=True)
     # Include Strategy
     strategy = []
     strategy_list = []
