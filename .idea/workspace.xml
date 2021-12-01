@@ -2,23 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/strategies/BBKCBreak.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/BBKCReverse.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/BBReverse.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/BollReverse.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/BollingBear.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/ConnorRSI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/DonchainChannels.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/DualMA.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/DualMASign.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/MovingAverage.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/RSI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/SimpleBollinger.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/Swing.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/TrendLine.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/VolatileBoll.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/draft.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/study_strategy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WFO.py" beforeDir="false" afterPath="$PROJECT_DIR$/WFO.py" afterDir="false" />
     </list>
@@ -73,7 +56,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File" value="yaml" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/strategies" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -233,6 +216,14 @@
       <workItem from="1638237604121" duration="18265000" />
       <workItem from="1638278281982" duration="1610000" />
       <workItem from="1638292788842" duration="1029000" />
+      <workItem from="1638327927551" duration="260000" />
+      <workItem from="1638328206907" duration="74000" />
+      <workItem from="1638328301007" duration="76000" />
+      <workItem from="1638328392126" duration="35000" />
+      <workItem from="1638328444641" duration="203000" />
+      <workItem from="1638328667524" duration="71000" />
+      <workItem from="1638328755405" duration="30000" />
+      <workItem from="1638328800867" duration="1042000" />
     </task>
     <servers />
   </component>

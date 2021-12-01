@@ -8,6 +8,7 @@ import backtrader.indicators as btind
 import numpy as np
 import optunity.metrics
 import pandas as pd
+import pandas_datareader as web
 import yaml
 from pandas import DataFrame
 from sklearn.model_selection import TimeSeriesSplit
@@ -34,7 +35,8 @@ globalparams = dict(strategy='long_short',  # if a different strategy is used
                     test_splits=1,  # how many splits should the data be tested on?
                     start=dt.datetime(2019, 1, 1),
                     end=dt.datetime(2021, 1, 1),
-                    symbols=["ETHUSDT", "BTCUSDT"],  # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
+                    symbols=["ETHUSDT", "BTCUSDT"],
+                    # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
                     cash=1000,
                     commission=0.0008,
                     coc='True',
@@ -163,6 +165,12 @@ class TimeSeriesSplitImproved(TimeSeriesSplit):
             for test_start in test_starts:
                 yield (indices[:test_start],
                        indices[test_start:test_start + test_size])
+
+
+class CommInfoFractional(bt.CommissionInfo):
+    def getsize(self, price, cash):
+        '''Returns fractional size for cash operation @price'''
+        return self.p.leverage * (cash / price)
 
 
 class PropSizer(bt.Sizer):  # todo need rework
@@ -319,12 +327,43 @@ class SMACWalkForward(bt.Strategy):
                     self.order_target_percent(data=self.getdatabyname(d), target=0.98)
 
             else:  # We have an open position
-                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[
-                    0]:  # A sell signal
+                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[0]:  # A sell signal
                     self.order_target_percent(data=self.getdatabyname(d), target=0)
 
 
 def main():
+    datafeeds = {s: web.DataReader(s, "yahoo", globalparams['start'], globalparams['end']) for s in
+                 globalparams['symbols']}
+
+    # resample to weekly data
+
+    for s, df in datafeeds.items():
+        '''
+        df['Date'] = pd.to_datetime(df['Date'])
+        df.set_index('Date', inplace=True)
+        df.sort_index(inplace=True)
+        '''
+
+        def take_first(array_like):
+            return array_like[0]
+
+        def take_last(array_like):
+            return array_like[-1]
+
+        ohlc_dict = {'High': 'max',
+                     'Low': 'min',
+                     'Open': take_first,
+                     'Close': take_last,
+                     'Adj Close': take_last,
+                     'Volume': 'sum'}
+
+        # datafeeds[s] = df.resample('W', loffset=pd.offsets.timedelta(days=-2)).agg(ohlc_dict).copy()  # to put the labels to Monday
+        datafeeds[s] = df.resample('W', offset='-2d').agg(ohlc_dict).copy()  # to put the labels to Monday
+        # Weekly resample
+
+    for df in datafeeds.values():
+        df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
+
     tscv = TimeSeriesSplitImproved(globalparams['n_splits'])
     split = tscv.split(datafeeds[globalparams['symbols'][0]], fixed_length=globalparams['fixed_length'],
                        train_splits=globalparams['train_splits'], test_splits=globalparams['test_splits'])
@@ -357,16 +396,20 @@ def main():
 
         optimal_pars, details, _ = opt
 
-        tester = bt.Cerebro(stdstats=False, maxcpus=None)
+        tester = bt.Cerebro(stdstats=False, maxcpus=True)
         tester.broker.set_cash(globalparams['cash'])
         tester.broker.set_coc(eval(globalparams['coc']))
+        commission = 0.0004
+        comminfo = CommInfoFractional(commission=commission)
+        tester.broker.addcommissioninfo(comminfo)
         tester.broker.setcommission(globalparams['commission'])
         tester.addanalyzer(AcctStats)
         tester.addsizer(PropSizer)
         tester.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
 
         # TESTING
-        tester.addstrategy(eval(globalparams['strategy']), var1=optimal_pars['var1'],
+        tester.addstrategy(eval(globalparams['strategy']),
+                           var1=optimal_pars['var1'],
                            var2=optimal_pars['var2'])  # Test with optimal combination toDO like above int vs float
         for s, df in datafeeds.items():
             data = bt.feeds.PandasData(dataname=df.iloc[test], name=s)  # Add a subset of data
