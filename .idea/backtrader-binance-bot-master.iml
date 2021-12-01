@@ -8,4 +8,7 @@
   <component name="PackageRequirementsSettings">
     <option name="versionSpecifier" value="Greater or equal (&gt;=x.y.z)" />
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="renderExternalDocumentation" value="true" />
+  </component>
 </module>

@@ -2,6 +2,7 @@
 
 import datetime as dt
 import time
+import warnings
 
 import backtrader as bt
 import backtrader.indicators as btind
@@ -9,6 +10,7 @@ import numpy as np
 import optunity.metrics
 import pandas as pd
 import pandas_datareader as web
+import quantstats
 import yaml
 from pandas import DataFrame
 from sklearn.model_selection import TimeSeriesSplit
@@ -403,9 +405,11 @@ def main():
         comminfo = CommInfoFractional(commission=commission)
         tester.broker.addcommissioninfo(comminfo)
         tester.broker.setcommission(globalparams['commission'])
+        tester.addanalyzer(bt.analyzers.SQN, _name="sqn")
+        tester.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
         tester.addanalyzer(AcctStats)
         tester.addsizer(PropSizer)
-        tester.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
+        # tester.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
 
         # TESTING
         tester.addstrategy(eval(globalparams['strategy']),
@@ -421,7 +425,15 @@ def main():
         res_dict = res[0].analyzers.acctstats.get_analysis()
         res_dict["var1"] = optimal_pars['var1']
         res_dict["var2"] = optimal_pars['var2']
-        res_dict["sharpe"] = res[0].analyzers.sharperatio.get_analysis()['sharperatio']
+        res_dict["SQN"] = res[0].analyzers.sqn.get_analysis().sqn
+        #
+        warnings.filterwarnings('ignore')
+        portfolio_stats = res[0].analyzers.analyzers.getbyname('pyfolio')
+        returns, positions, transactions, gross_lev = portfolio_stats.get_pf_items()
+        returns.index = returns.index.tz_convert(None)
+        dsharp = quantstats.stats.smart_sharpe(returns, periods=365)
+        sortino = quantstats.stats.smart_sortino(returns, periods=365)
+
         res_dict["start_date"] = datafeeds[globalparams['symbols'][0]].iloc[test[0]].name
         res_dict["end_date"] = datafeeds[globalparams['symbols'][0]].iloc[test[-1]].name
         walk_forward_results.append(res_dict)
@@ -435,9 +447,9 @@ def main():
     is_first = True
 
     # plot_symbols = []
-    for s, df in datafeeds.items():
-        data = bt.feeds.PandasData(dataname=df, name=s)
-        if s in plot_symbols:
+    for symbol, df in datafeeds.items():
+        data = bt.feeds.PandasData(dataname=df, name=symbol)
+        if symbol in plot_symbols:
             if is_first:
                 data_main_plot = data
                 is_first = False
@@ -445,6 +457,13 @@ def main():
                 data.plotinfo.plotmaster = data_main_plot
         else:
             data.plotinfo.plot = True
+        tframes = dict(minutes=bt.TimeFrame.Minutes, days=bt.TimeFrame.Days, weeks=bt.TimeFrame.Weeks,
+                       months=bt.TimeFrame.Months, years=bt.TimeFrame.Years)
+        dataha = data.clone()
+        dataha.addfilter(bt.filters.HeikinAshi(dataha))
+        # Add the feed
+        cerebro_wf.resampledata(data, timeframe=tframes['minutes'], compression=1, name=f'{symbol}_Kline')
+        cerebro_wf.resampledata(dataha, timeframe=tframes['minutes'], compression=1, name=f'{symbol}_Heikin')
         cerebro_wf.adddata(data)  # Give the data to cerebro
 
     cerebro_wf.broker.setcash(globalparams['cash'])
@@ -461,10 +480,10 @@ def main():
     cerebro_wf.addobservermulti(bt.observers.BuySell)  # Plots up/down arrows
     cerebro_wf.addsizer(PropSizer)
     cerebro_wf.addanalyzer(AcctStats)
-    cerebro_wf.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
+    # cerebro_wf.addanalyzer(bt.analyzers.SharpeRatio, riskfreerate=0.0)
 
     results = cerebro_wf.run()
-    print(f"Sharpe: {results[0].analyzers.sharperatio.get_analysis()['sharperatio']:.3f}")
+    # print(f"Sharpe: {results[0].analyzers.sharperatio.get_analysis()['sharperatio']:.3f}")
 
     cerebro_wf.plot(iplot=True)
     cerebro = bt.Cerebro(quicknotify=True)
@@ -564,7 +583,7 @@ def main():
     print('Final Portfolio Value: %.2f' % final_value)
     print('Profit %.3f%%' % ((final_value - initial_value) / initial_value * 100))
     print_trade_analysis(result[0].analyzers.ta.get_analysis())
-    print_sqn(result[0].analyzers.sqn.get_analysis())
+    # print_sqn(result[0].analyzers.sqn.get_analysis())
     if DEBUG:
         cerebro.plot()
 
