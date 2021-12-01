@@ -431,9 +431,8 @@ def main():
         portfolio_stats = res[0].analyzers.analyzers.getbyname('pyfolio')
         returns, positions, transactions, gross_lev = portfolio_stats.get_pf_items()
         returns.index = returns.index.tz_convert(None)
-        dsharp = quantstats.stats.smart_sharpe(returns, periods=365)
-        sortino = quantstats.stats.smart_sortino(returns, periods=365)
-
+        res_dict["Sortino"] = quantstats.stats.smart_sortino(returns, periods=365)
+        res_dict["Sharp"] = quantstats.stats.smart_sharpe(returns, periods=365)
         res_dict["start_date"] = datafeeds[globalparams['symbols'][0]].iloc[test[0]].name
         res_dict["end_date"] = datafeeds[globalparams['symbols'][0]].iloc[test[-1]].name
         walk_forward_results.append(res_dict)
