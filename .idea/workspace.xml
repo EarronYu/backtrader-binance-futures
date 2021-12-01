@@ -1,7 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="" />
+    <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/strategies/BBKCBreak.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/BBKCReverse.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/BBReverse.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/BollReverse.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/BollingBear.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/ConnorRSI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/DonchainChannels.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/DualMA.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/DualMASign.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/MovingAverage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/RSI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/SimpleBollinger.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/Swing.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/TrendLine.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/VolatileBoll.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/draft.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/study_strategy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WFO.py" beforeDir="false" afterPath="$PROJECT_DIR$/WFO.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -52,11 +72,12 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File" value="yaml" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/strategies" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\x7498\Documents\GitHub\backtrader-binance-futures\strategies" />
       <recent name="D:\x7498\Documents\GitHub\backtrader-binance-futures" />
       <recent name="D:\x7498\Documents\GitHub\binance-futures" />
       <recent name="D:\x7498\Documents\GitHub\binance-futures\strategies" />
@@ -210,6 +231,8 @@
       <workItem from="1637738513063" duration="6109000" />
       <workItem from="1638173600046" duration="10324000" />
       <workItem from="1638237604121" duration="18265000" />
+      <workItem from="1638278281982" duration="1610000" />
+      <workItem from="1638292788842" duration="1029000" />
     </task>
     <servers />
   </component>

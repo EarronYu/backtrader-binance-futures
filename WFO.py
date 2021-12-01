@@ -21,38 +21,24 @@ from config import BINANCE, ENV, PRODUCTION, COIN_TARGET, COIN_REFER, DEBUG
 from sizer.percent import FullMoney
 from utils import print_trade_analysis, print_sqn, send_telegram_message
 
-'''
-- Currently (last two period is training set for next period, but I want the total to be validated on every single period) --> switch!
-- strategy should be easy to replace
-- implement daily vs. weekly etc. compression)
-- improve the sizer (depending on the strategy)
-- Implement number of trades (greater than 50 + # var * 50 is suggested by the author (I assume this is meant for daily values) & volatility of trade returns for testing and training to indicate the statistical fitness of the model (https://www.tradelikeamachine.com/blog/over-optimization/part-3-in-sample-out-of-sample-trading-system-backtesting integrate )(volatility of trades?) --> self.returnvola = btind.StdDev(btind.PctChange(), period=30)
-https://www.tradelikeamachine.com/images/blog/over-optimization/quantitative-out-of-sample-walk-forward-metrics.png
-- pyfolio integration
-- better charting?
-- btreport?
-- clean up code?
-- find a momentum strategy to implement
-- etc.
-'''
 pd.set_option('display.max_rows', 10)
 pd.set_option('display.max_columns', 10)
 pd.set_option('display.width', 1000)
 
 globalparams = dict(strategy='long_short',  # if a different strategy is used
-                    n_splits=10,  # how many chunks the data should have
+                    n_splits=20,  # how many chunks the data should have
                     fixed_length=True,
                     # by setting it False the training data will will grow over time, otherwise it will keep the size given under train_splits
-                    train_splits=1,
+                    train_splits=2,
                     # how many splits should be used to train the model (be aware of these two variables may not work with your strategy, i.e. SMA100 but two training splits are just 110 days or less than 100 days)
                     test_splits=1,  # how many splits should the data be tested on?
-                    start=dt.datetime(2010, 1, 1),
-                    end=dt.datetime(2020, 1, 31),
-                    symbols=["TQQQ"],  # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
-                    cash=10000,
-                    commission=0.02,
+                    start=dt.datetime(2019, 1, 1),
+                    end=dt.datetime(2021, 1, 1),
+                    symbols=["ETHUSDT", "BTCUSDT"],  # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
+                    cash=1000,
+                    commission=0.0008,
                     coc='True',
-                    num_evals=100,  # how often should the optimizer try to optimize
+                    num_evals=30,  # how often should the optimizer try to optimize
                     var1range=[1, 1.25],  # reasonable range within the optimization should happen (variable 1)
                     var2range=[1, 1.25],  # reasonable range within the optimization should happen (variable 2)
                     sma_period=15,  # SMA Band Period
