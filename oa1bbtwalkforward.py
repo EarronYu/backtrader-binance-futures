@@ -420,7 +420,6 @@ class SMACWalkForward(bt.Strategy):
         self.regime = dict()
 
         self.date_combos = [c for c in zip(self.p.start_dates, self.p.end_dates)]
-        '''
         # Error checking
         if type(self.p.start_dates) is not list or type(self.p.end_dates) is not list or \
                 type(self.p.fast) is not list or type(self.p.slow) is not list:
@@ -428,7 +427,6 @@ class SMACWalkForward(bt.Strategy):
         elif len(self.p.start_dates) != len(self.p.end_dates) or \
                 len(self.p.fast) != len(self.p.start_dates) or len(self.p.slow) != len(self.p.start_dates):
             raise ValueError("All lists passed to params must have same length.")
-        '''
         for d in self.getdatanames():
             self.sma[d] = dict()
             self.var1[d] = dict()
@@ -508,8 +506,7 @@ class SMACWalkForward(bt.Strategy):
                     self.order_target_percent(data=self.getdatabyname(d), target=0.98)
 
             else:  # We have an open position
-                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[
-                    0]:  # A sell signal
+                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[0]:  # A sell signal
                     self.order_target_percent(data=self.getdatabyname(d), target=0)
 
 

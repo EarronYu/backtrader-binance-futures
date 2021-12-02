@@ -9,7 +9,7 @@ from config import BINANCE, ENV, PRODUCTION, COIN_TARGET, COIN_REFER, DEBUG
 
 from dataset.dataset import CustomDataset
 from sizer.percent import FullMoney
-from strategies.basic_rsi import BasicRSI
+from strategies.BasicRSI import BasicRSI
 from utils import print_trade_analysis, print_sqn, send_telegram_message
 
 from PrepareCSV import prepare_data

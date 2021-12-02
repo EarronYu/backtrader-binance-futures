@@ -24,7 +24,7 @@ from config import BINANCE, ENV, PRODUCTION, COIN_TARGET, COIN_REFER, DEBUG
 from sizer.percent import FullMoney
 from utils import print_trade_analysis, print_sqn, send_telegram_message
 
-from strategies.BBKCBreak import BBKCBreak
+from strategies.BasicRSI import BasicRSI, BasicRSIWalkForward
 
 pd.set_option('display.max_rows', 10)
 pd.set_option('display.max_columns', 10)
