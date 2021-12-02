@@ -386,6 +386,7 @@ def main():
                        train_splits=globalparams['train_splits'], test_splits=globalparams['test_splits'])
 
     walk_forward_results = list()
+    returns_results = list()
 
     # Be prepared: this will take a while
     for train, test in split:
@@ -397,20 +398,43 @@ def main():
                                 var1=var1,
                                 var2=var2)  # toDO make the float int choice switchable
             cerebro.broker.setcash(globalparams['cash'])
+            cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
+            cerebro.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
             cerebro.broker.setcommission(globalparams['commission'])
-            for s, df in datafeeds.items():  # toDO 1201 进行到这里了
+            for s, datakl in datafeeds.items():  # toDO 1201 进行到这里了
                 # data = bt.feeds.PandasData(dataname=df.iloc[train], name=s)  # Add a subset of data
                 # to the object that
                 # corresponds to training
-                dataha = data.clone()
+                dataha = datakl.clone()
                 dataha.addfilter(bt.filters.HeikinAshi(dataha))
                 tframes = dict(minutes=bt.TimeFrame.Minutes, days=bt.TimeFrame.Days, weeks=bt.TimeFrame.Weeks,
                                months=bt.TimeFrame.Months, years=bt.TimeFrame.Years)
-                cerebro.resampledata(data, timeframe=tframes['minutes'], compression=1, name='Real')
-                cerebro.resampledata(dataha, timeframe=tframes['minutes'], compression=1, name='Heikin')
+                cerebro.resampledata(data, name=f'{s}_10m', timeframe=tframes['minutes'], compression=globalparams['timeframe'])
+                cerebro.resampledata(dataha, name=f'{s}_10m_Heikin', timeframe=tframes['minutes'], compression=globalparams['timeframe'])
             cerebro.broker.set_coc(eval(globalparams['coc']))
-            cerebro.run()
-            return cerebro.broker.getvalue()  # ToDo make the variable that should be optimized flexible
+            results = cerebro.run()
+            strat = results[0]
+            anzs = strat.analyzers
+            #
+            warnings.filterwarnings('ignore')
+            portfolio_stats = strat.analyzers.getbyname('pyfolio')
+            returns, positions, transactions, gross_lev = portfolio_stats.get_pf_items()
+            returns.index = returns.index.tz_convert(None)
+            period = globalparams['end'] - globalparams['start']
+            period = period.days * globalparams['train_splits'] / globalparams['n_splits']
+            dsharp = quantstats.stats.smart_sharpe(returns, periods=period)
+            sortino = quantstats.stats.smart_sortino(returns, periods=period)
+            sqn = anzs.sqn.get_analysis().sqn
+            dcash9 = cerebro.broker.getvalue()
+            dcash0 = cerebro.broker.startingcash
+            pnl = dcash9 / dcash0 - 1  # ToDo make the variable that should be optimized flexible
+            if dsharp is None:
+                param = 0
+            elif (dsharp > 0) and (sqn > 0) and (sortino > 0) and (pnl > 0):
+                param = sqn * dsharp * np.cbrt(pnl) * sortino
+            else:
+                param = 0
+            return param
 
         opt = optunity.maximize(runstrat,
                                 num_evals=globalparams['num_evals'],
@@ -447,17 +471,20 @@ def main():
         res_dict = res[0].analyzers.acctstats.get_analysis()
         res_dict["var1"] = optimal_pars['var1']
         res_dict["var2"] = optimal_pars['var2']
-        res_dict["SQN"] = res[0].analyzers.sqn.get_analysis().sqn
+        # res_dict["SQN"] = res[0].analyzers.sqn.get_analysis().sqn
         #
         warnings.filterwarnings('ignore')
         portfolio_stats = res[0].analyzers.analyzers.getbyname('pyfolio')
         returns, positions, transactions, gross_lev = portfolio_stats.get_pf_items()
         returns.index = returns.index.tz_convert(None)
-        res_dict["Sortino"] = quantstats.stats.smart_sortino(returns, periods=365)
-        res_dict["Sharp"] = quantstats.stats.smart_sharpe(returns, periods=365)
+        # period = globalparams['end'] - globalparams['start']
+        # period = period.days * globalparams['train_splits'] / globalparams['n_splits']
+        # res_dict["Sharp"] = quantstats.stats.smart_sharpe(returns, periods=period)
+        # res_dict["Sortino"] = quantstats.stats.smart_sortino(returns, periods=period)
         res_dict["start_date"] = datafeeds[globalparams['symbols'][0]].iloc[test[0]].name
         res_dict["end_date"] = datafeeds[globalparams['symbols'][0]].iloc[test[-1]].name
         walk_forward_results.append(res_dict)
+        returns_results.append(returns)  # toDo 写到这里了
 
     wfdf = DataFrame(walk_forward_results)
     print(wfdf.loc[:, wfdf.columns != 'start'])

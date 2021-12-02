@@ -109,8 +109,7 @@ def main():
                 dataha = datakl.clone()
                 dataha.addfilter(bt.filters.HeikinAshi(dataha))
                 cerebro.resampledata(datakl, name=f'{symbol}_10m', timeframe=bt.TimeFrame.Minutes, compression=10)
-                cerebro.resampledata(dataha, name=f'{symbol}_10m_Heikin', timeframe=bt.TimeFrame.Minutes,
-                                     compression=10)
+                cerebro.resampledata(dataha, name=f'{symbol}_10m_Heikin', timeframe=bt.TimeFrame.Minutes, compression=10)
             f.close()
         broker = cerebro.getbroker()
         broker.setcommission(commission=0.0004, name=COIN_TARGET)  # Simulating exchange fee
