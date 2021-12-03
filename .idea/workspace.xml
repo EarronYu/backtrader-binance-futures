@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/strategies/longshort.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/strategies/BasicRSI.py" beforeDir="false" afterPath="$PROJECT_DIR$/strategies/BasicRSI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/oa1bbtwalkforward.py" beforeDir="false" afterPath="$PROJECT_DIR$/oa1bbtwalkforward.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +72,7 @@
       <recent name="D:\x7498\Documents\GitHub\binance-futures\dataset" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Doctests in oa1bbtwalkforward">
+  <component name="RunManager" selected="Python.oa1bbtwalkforward">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="backtrader-binance-bot-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -94,6 +95,25 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="oa1bbtwalkforward" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="backtrader-binance-bot-master" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/oa1bbtwalkforward.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="walkforwardworksheet (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="backtrader-binance-bot-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -108,28 +128,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/WalkForward/walkforwardworksheet.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="walkforwardworksheet" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="backtrader-binance-bot-master" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/walkforwardworksheet.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -197,11 +195,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.oa1bbtwalkforward" />
         <item itemvalue="Python tests.Doctests in oa1bbtwalkforward" />
         <item itemvalue="Python tests.Doctests in btwalkforward" />
         <item itemvalue="Python tests.Doctests in TimeSeriesSplitImproved" />
         <item itemvalue="Python.walkforwardworksheet (1)" />
-        <item itemvalue="Python.walkforwardworksheet" />
       </list>
     </recent_temporary>
   </component>
@@ -251,6 +249,7 @@
       <workItem from="1638417314227" duration="6152000" />
       <workItem from="1638462966037" duration="1086000" />
       <workItem from="1638513202049" duration="2231000" />
+      <workItem from="1638529756132" duration="3310000" />
     </task>
     <servers />
   </component>

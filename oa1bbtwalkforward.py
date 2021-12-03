@@ -31,22 +31,24 @@ pd.set_option('display.max_rows', 10)
 pd.set_option('display.max_columns', 10)
 pd.set_option('display.width', 1000)
 
-globalparams = dict(strategy='long_short',  # if a different strategy is used
-                    n_splits=10,  # how many chunks the data should have
+globalparams = dict(strategy='SMAC',  # if a different strategy is used
+                    n_splits=11,  # how many chunks the data should have
                     fixed_length=True,
                     # by setting it False the training data will will grow over time, otherwise it will keep the size given under train_splits
                     train_splits=1,
                     # how many splits should be used to train the model (be aware of these two variables may not work with your strategy, i.e. SMA100 but two training splits are just 110 days or less than 100 days)
                     test_splits=1,  # how many splits should the data be tested on?
                     start=dt.datetime(2010, 1, 1),
-                    end=dt.datetime(2020, 1, 31),
+                    end=dt.datetime(2021, 1, 1),
                     symbols=["TQQQ"],  # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
                     cash=10000,
                     commission=0.02,
                     coc='True',
                     num_evals=100,  # how often should the optimizer try to optimize
-                    var1range=[1, 1.25],  # reasonable range within the optimization should happen (variable 1)
-                    var2range=[1, 1.25],  # reasonable range within the optimization should happen (variable 2)
+                    var1range=[1, 125],  # reasonable range within the optimization should happen (variable 1)
+                    var1type='int',
+                    var2range=[1, 125],  # reasonable range within the optimization should happen (variable 2)
+                    var2type='int',
                     sma_period=15,  # SMA Band Period
                     vola=False,
                     # this should only be used if one has a working strategy: if True the total period will be optimized and then the volatility of the overall parameters can be observed todo implement it
@@ -245,11 +247,11 @@ class SMAC(bt.Strategy):
                 # Notice the indexing; [0] always means the present bar, and [-1] the bar immediately preceding
                 # Thus, the condition below translates to: "If today the regime is bullish (greater than
                 # 0) and yesterday the regime was not bullish"
-                if self.regime[d][0] > 0 and self.regime[d][-1] <= 0:  # A buy signal
+                if self.regime[d][0] > 0 >= self.regime[d][-1]:  # A buy signal
                     self.buy(data=self.getdatabyname(d))
 
             else:  # We have an open position
-                if self.regime[d][0] <= 0 and self.regime[d][-1] > 0:  # A sell signal
+                if self.regime[d][0] <= 0 < self.regime[d][-1]:  # A sell signal
                     self.sell(data=self.getdatabyname(d))
 
 
@@ -331,12 +333,10 @@ for s, df in datafeeds.items():
                  'Adj Close': take_last,
                  'Volume': 'sum'}
 
-    # datafeeds[s] = df.resample('W',  # Weekly resample
-    #                            loffset=pd.offsets.timedelta(days=-2)).agg(
-    #     ohlc_dict).copy()  # to put the labels to Monday
     datafeeds[s] = df.resample('W',  # Weekly resample
                                offset='-2d').agg(
         ohlc_dict).copy()  # to put the labels to Monday
+
 for df in datafeeds.values():
     df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
 
@@ -354,8 +354,8 @@ for train, test in split:
     # Optimize with optunity
     def runstrat(var1, var2):
         cerebro = bt.Cerebro(stdstats=False, maxcpus=None)
-        cerebro.addstrategy(eval(globalparams['strategy']), var1=var1,
-                            var2=var2)  # toDO make the float int choice switchable
+        cerebro.addstrategy(eval(globalparams['strategy']), var1=eval(globalparams['var1type'])(var1),
+                            var2=eval(globalparams['var2type'])(var2))  # toDO make the float int choice switchable
         cerebro.broker.setcash(globalparams['cash'])
         cerebro.broker.setcommission(globalparams['commission'])
         for s, df in datafeeds.items():
@@ -420,6 +420,7 @@ class SMACWalkForward(bt.Strategy):
         self.regime = dict()
 
         self.date_combos = [c for c in zip(self.p.start_dates, self.p.end_dates)]
+        '''
         # Error checking
         if type(self.p.start_dates) is not list or type(self.p.end_dates) is not list or \
                 type(self.p.fast) is not list or type(self.p.slow) is not list:
@@ -427,6 +428,7 @@ class SMACWalkForward(bt.Strategy):
         elif len(self.p.start_dates) != len(self.p.end_dates) or \
                 len(self.p.fast) != len(self.p.start_dates) or len(self.p.slow) != len(self.p.start_dates):
             raise ValueError("All lists passed to params must have same length.")
+        '''
         for d in self.getdatanames():
             self.sma[d] = dict()
             self.var1[d] = dict()
@@ -506,7 +508,8 @@ class SMACWalkForward(bt.Strategy):
                     self.order_target_percent(data=self.getdatabyname(d), target=0.98)
 
             else:  # We have an open position
-                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[0]:  # A sell signal
+                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[
+                    0]:  # A sell signal
                     self.order_target_percent(data=self.getdatabyname(d), target=0)
 
 
