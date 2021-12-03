@@ -19,7 +19,8 @@ class BasicRSI(StrategyBase):
         # self.lastRanks = []  # 上次交易股票的列表
         # 0号是指数，不进入选股池，从1号往后进入股票池
         # self.stocks = self.datas[1:]
-
+        # todo 将
+        
         self.params = dict()
         self.ind = dict()
 
