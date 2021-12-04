@@ -49,6 +49,8 @@ globalparams = dict(strategy='BasicRSI',  # if a different strategy is used
                     var1type='int',
                     var2range=[1, 1.25],  # reasonable range within the optimization should happen (variable 2)
                     var2type='int',
+                    var3range=[0.02, 0.1],
+                    var3type='float',
                     vola=False,
                     # this should only be used if one has a working strategy: if True the total period will be optimized and then the volatility of the overall parameters can be observed todo implement it
                     )
