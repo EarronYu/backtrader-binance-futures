@@ -3,7 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="b9a9dc2d-1a9e-4b55-944d-25ccc4ee50b4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WFO.py" beforeDir="false" afterPath="$PROJECT_DIR$/WFO.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/oa1bbtwalkforward.py" beforeDir="false" afterPath="$PROJECT_DIR$/oa1bbtwalkforward.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/strategies/BasicRSI.py" beforeDir="false" afterPath="$PROJECT_DIR$/strategies/BasicRSI.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -249,7 +251,7 @@
       <workItem from="1638462966037" duration="1086000" />
       <workItem from="1638513202049" duration="2231000" />
       <workItem from="1638529756132" duration="3310000" />
-      <workItem from="1638540031362" duration="8389000" />
+      <workItem from="1638540031362" duration="14902000" />
     </task>
     <servers />
   </component>

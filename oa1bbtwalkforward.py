@@ -343,7 +343,7 @@ for df in datafeeds.values():
     df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
 
 tscv = TimeSeriesSplitImproved(globalparams['n_splits'])
-split = tscv.split(datafeeds[globalparams['symbols'][0]], fixed_length=globalparams['fixed_length'],
+split = tscv.split(datafeeds[globalparams['symbols'][s]], fixed_length=globalparams['fixed_length'],
                    train_splits=globalparams['train_splits'], test_splits=globalparams['test_splits'])
 
 walk_forward_results = list()

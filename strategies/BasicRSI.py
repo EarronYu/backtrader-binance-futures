@@ -26,7 +26,7 @@ class BasicRSI(StrategyBase):
 
         for d in self.getdatanames():
             if 'Heikin' in d:
-                strategy_params = self.update_params(strategy=self.__class__.__name__.rstrip('_Heikin'), data=d)
+                strategy_params = self.load_params(strategy=self.__class__.__name__.rstrip('_Heikin'), data=d)
                 # self.params[d] = dict()
                 self.params[d]['ema_fast_window'] = strategy_params['ema_fast_window']
                 self.params[d]['ema_slow_window'] = strategy_params['ema_slow_window']
@@ -61,7 +61,7 @@ class BasicRSI(StrategyBase):
     #     if self.data0.datetime.date(0).month in [5, 9, 11]:
     #         self.rebalance_portfolio()  # 执行再平衡
 
-    def update_params(self, strategy, data):
+    def load_params(self, strategy, data):
         with open('../dataset/symbol_config.yaml', 'r') as f:
             symbol_config = f.read()
             symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)

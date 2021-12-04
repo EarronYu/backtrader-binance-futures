@@ -30,7 +30,7 @@ pd.set_option('display.max_rows', 10)
 pd.set_option('display.max_columns', 10)
 pd.set_option('display.width', 1000)
 
-globalparams = dict(strategy='BBKCBreak',  # if a different strategy is used
+globalparams = dict(strategy='BasicRSI',  # if a different strategy is used
                     n_splits=20,  # how many chunks the data should have
                     fixed_length=True,
                     # by setting it False the training data will will grow over time, otherwise it will keep the size given under train_splits
@@ -39,15 +39,16 @@ globalparams = dict(strategy='BBKCBreak',  # if a different strategy is used
                     test_splits=1,  # how many splits should the data be tested on?
                     start=dt.datetime(2019, 1, 1),
                     end=dt.datetime(2021, 1, 1),
-                    symbols="ETHUSDT",
-                    timeframe="15",  # unit is minutes
+                    symbol="ETHUSDT",
+                    timeframe=10,  # unit is minutes
                     cash=1000,
                     commission=0.0004,
                     coc='True',
                     num_evals=30,  # how often should the optimizer try to optimize
                     var1range=[1, 1.25],  # reasonable range within the optimization should happen (variable 1)
+                    var1type='int',
                     var2range=[1, 1.25],  # reasonable range within the optimization should happen (variable 2)
-                    sma_period=15,  # SMA Band Period
+                    var2type='int',
                     vola=False,
                     # this should only be used if one has a working strategy: if True the total period will be optimized and then the volatility of the overall parameters can be observed todo implement it
                     )
@@ -344,8 +345,24 @@ class SMACWalkForward(bt.Strategy):
                     self.order_target_percent(data=self.getdatabyname(d), target=0.98)
 
             else:  # We have an open position
-                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[0]:  # A sell signal
+                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[
+                    0]:  # A sell signal
                     self.order_target_percent(data=self.getdatabyname(d), target=0)
+
+
+def update_params(var1, var2):
+    strategy = globalparams['strategy']
+    timeframe = globalparams['timeframe']
+    with open('../dataset/symbol_config.yaml', 'r') as f:
+        symbol_config = f.read()
+        symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
+        param = globalparams['symbol'].replace('USDT', f'USDT_{strategy}_{timeframe}')
+        # BNBUSDT_MyStrategy_10m
+        # param = param.remove('_Kline')
+        param = param.split('_')
+        symbol_config[param[0]][param[1]][param[2]]['var1'] = var1
+        symbol_config[param[0]][param[1]][param[2]]['var2'] = var2
+        f.close()
 
 
 def main():
@@ -354,37 +371,43 @@ def main():
 
     # resample to weekly data
 
-    # for s, df in datafeeds.items():
-    #     '''
-    #     df['Date'] = pd.to_datetime(df['Date'])
-    #     df.set_index('Date', inplace=True)
-    #     df.sort_index(inplace=True)
-    #     '''
-    #
-    #     def take_first(array_like):
-    #         return array_like[0]
-    #
-    #     def take_last(array_like):
-    #         return array_like[-1]
-    #
-    #     ohlc_dict = {'High': 'max',
-    #                  'Low': 'min',
-    #                  'Open': take_first,
-    #                  'Close': take_last,
-    #                  'Adj Close': take_last,
-    #                  'Volume': 'sum'}
-    #
-    #     # datafeeds[s] = df.resample('W', loffset=pd.offsets.timedelta(days=-2)).agg(ohlc_dict).copy()  # to put the labels to Monday
-    #     datafeeds[s] = df.resample('W', offset='-2d').agg(ohlc_dict).copy()  # to put the labels to Monday
-    #     # Weekly resample
-    #
-    # for df in datafeeds.values():
-    #     df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
+    for s, df in datafeeds.items():
+        cerebro = bt.Cerebro(stdstats=False, maxcpus=None)
+        '''
+        df['Date'] = pd.to_datetime(df['Date'])
+        df.set_index('Date', inplace=True)
+        df.sort_index(inplace=True)
+        '''
+
+        # def take_first(array_like):
+        #     return array_like[0]
+        #
+        # def take_last(array_like):
+        #     return array_like[-1]
+        #
+        # ohlc_dict = {'High': 'max',
+        #              'Low': 'min',
+        #              'Open': take_first,
+        #              'Close': take_last,
+        #              'Adj Close': take_last,
+        #              'Volume': 'sum'}
+        #
+        # datafeeds[s] = df.resample('10T').agg(ohlc_dict).copy()  # to put the labels to Monday
+        #     datafeeds[s] = df.resample('W', offset='-2d').agg(ohlc_dict).copy()  # to put the labels to Monday
+        #     # Weekly resample
+        #
+        # for df in datafeeds.values():
+        #     df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
+        tframes = dict(minutes=bt.TimeFrame.Minutes, days=bt.TimeFrame.Days, weeks=bt.TimeFrame.Weeks,
+                       months=bt.TimeFrame.Months, years=bt.TimeFrame.Years)
+        compression = globalparams['timeframe']
+        datafeeds = cerebro.resampledata(df, name=f'{s}_{compression}m', timeframe=tframes['minutes'],
+                                         compression=compression)
 
     tscv = TimeSeriesSplitImproved(globalparams['n_splits'])
     split = tscv.split(datafeeds[globalparams['symbols'][0]], fixed_length=globalparams['fixed_length'],
                        train_splits=globalparams['train_splits'], test_splits=globalparams['test_splits'])
-
+    # todo 需要加上能够同时放进去多数据的功能
     walk_forward_results = list()
     returns_results = list()
 
@@ -392,25 +415,21 @@ def main():
     for train, test in split:
         # TRAINING
         # Optimize with optunity
-        def runstrat(var1, var2):
+        def runstrat(var1, var2):  # todo 首先修改runstrate，将其中所有优化参数的部分都修改为向yaml文件写入对应参数
             cerebro = bt.Cerebro(stdstats=False, maxcpus=None)
-            cerebro.addstrategy(eval(globalparams['strategy']),
-                                var1=var1,
-                                var2=var2)  # toDO make the float int choice switchable
+            update_params(var1, var2)
+            cerebro.addstrategy(eval(globalparams['strategy']))  # toDO make the float int choice switchable
             cerebro.broker.setcash(globalparams['cash'])
             cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
             cerebro.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
             cerebro.broker.setcommission(globalparams['commission'])
-            for s, datakl in datafeeds.items():  # toDO 1201 进行到这里了
+            for s, datakl in datafeeds.items():  # toDO 需要将train和test的数据给分别变为Heikin，并且在外部先进行resample
                 # data = bt.feeds.PandasData(dataname=df.iloc[train], name=s)  # Add a subset of data
                 # to the object that
                 # corresponds to training
                 dataha = datakl.clone()
                 dataha.addfilter(bt.filters.HeikinAshi(dataha))
-                tframes = dict(minutes=bt.TimeFrame.Minutes, days=bt.TimeFrame.Days, weeks=bt.TimeFrame.Weeks,
-                               months=bt.TimeFrame.Months, years=bt.TimeFrame.Years)
-                cerebro.resampledata(data, name=f'{s}_10m', timeframe=tframes['minutes'], compression=globalparams['timeframe'])
-                cerebro.resampledata(dataha, name=f'{s}_10m_Heikin', timeframe=tframes['minutes'], compression=globalparams['timeframe'])
+
             cerebro.broker.set_coc(eval(globalparams['coc']))
             results = cerebro.run()
             strat = results[0]
