@@ -32,7 +32,7 @@ pd.set_option('display.max_columns', 10)
 pd.set_option('display.width', 1000)
 
 globalparams = dict(strategy='SMAC',  # if a different strategy is used
-                    n_splits=11,  # how many chunks the data should have
+                    n_splits=10,  # how many chunks the data should have
                     fixed_length=True,
                     # by setting it False the training data will will grow over time, otherwise it will keep the size given under train_splits
                     train_splits=1,
@@ -40,14 +40,15 @@ globalparams = dict(strategy='SMAC',  # if a different strategy is used
                     test_splits=1,  # how many splits should the data be tested on?
                     start=dt.datetime(2010, 1, 1),
                     end=dt.datetime(2021, 1, 1),
-                    symbols=["TQQQ"],  # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
+                    symbols=["IBM"],  # , "GOOG", "MSFT", "AMZN", "SNY", "VZ", "IBM", "HPQ", "QCOM", "NVDA"
                     cash=10000,
                     commission=0.02,
                     coc='True',
-                    num_evals=100,  # how often should the optimizer try to optimize
-                    var1range=[1, 125],  # reasonable range within the optimization should happen (variable 1)
+                    num_evals=30,  # how often should the optimizer try to optimize
+                    # 注意这里的参数range是否会超出data resample过后的每份的时间
+                    var1range=[1, 25],  # reasonable range within the optimization should happen (variable 1)
                     var1type='int',
-                    var2range=[1, 125],  # reasonable range within the optimization should happen (variable 2)
+                    var2range=[1, 25],  # reasonable range within the optimization should happen (variable 2)
                     var2type='int',
                     sma_period=15,  # SMA Band Period
                     vola=False,
@@ -209,7 +210,7 @@ class long_short(bt.Strategy):
                     self.order_target_percent(data=self.getdatabyname(d), target=0)
 
 
-class SMAC(bt.Strategy):
+class SMAC(bt.Strategy):  # todo 1203 既然在原有策略上无论怎么去debug都找不出来问题，干脆直接重写新策略
     """A simple moving average crossover strategy; crossing of a fast and slow moving average generates buy/sell
        signals"""
     params = dict(var1=20, var2=50)  # The windows for both var1 (fast) and var2 (slow) moving averages
@@ -221,10 +222,10 @@ class SMAC(bt.Strategy):
         self.slowma = dict()
         self.regime = dict()
 
-        if self.params.var1 > self.params.var2:
-            vfast = self.params.var1
-            self.params.var1 = self.params.var2
-            self.params.var2 = vfast
+        # if self.params.var1 > self.params.var2:
+        #     vfast = self.params.var1
+        #     self.params.var1 = self.params.var2
+        #     self.params.var2 = vfast
 
         for d in self.getdatanames():
             # The moving averages
@@ -236,7 +237,8 @@ class SMAC(bt.Strategy):
                                        plotname="SlowMA: " + d)
 
             # Get the regime
-            self.regime[d] = self.fastma[d] - self.slowma[d]  # Positive when bullish
+            alt = -1 if self.params.var1 - self.params.var2 < 0 else 1
+            self.regime[d] = alt * (self.fastma[d] - self.slowma[d])  # Positive when bullish
 
     def next(self):
         """Define what will be done in a single step, including creating and closing trades"""
@@ -333,9 +335,9 @@ for s, df in datafeeds.items():
                  'Adj Close': take_last,
                  'Volume': 'sum'}
 
-    datafeeds[s] = df.resample('W',  # Weekly resample
-                               offset='-2d').agg(
-        ohlc_dict).copy()  # to put the labels to Monday
+    # datafeeds[s] = df.resample('W',  # Weekly resample
+    #                            offset='-2d').agg(
+    #     ohlc_dict).copy()  # to put the labels to Monday
 
 for df in datafeeds.values():
     df["OpenInterest"] = 0  # PandasData reader expects an OpenInterest column;
@@ -438,20 +440,17 @@ class SMACWalkForward(bt.Strategy):
             # Additional indexing, allowing for differing start/end dates
             for sd, ed, f, s in zip(self.p.start_dates, self.p.end_dates, self.p.var1, self.p.var2):
                 # More error checking
-                '''
-                if type(f) is not int or type(s) is not int:
-                    raise ValueError("Must include only integers in fast, slow.")
-                elif f > s:
-                    raise ValueError("Elements in fast cannot exceed elements in slow.")
-                elif f <= 0 or s <= 0:
-                    raise ValueError("Moving average windows must be positive.")
-
-
-                if type(sd) is not dt.date or type(ed) is not dt.date:
-                    raise ValueError("Only datetime dates allowed in start_dates, end_dates.")
-                elif ed - sd < dt.timedelta(0):
-                    raise ValueError("Start dates must always be before end dates.")
-                '''
+                # if type(f) is not int or type(s) is not int:
+                #     raise ValueError("Must include only integers in fast, slow.")
+                # elif f > s:
+                #     raise ValueError("Elements in fast cannot exceed elements in slow.")
+                # elif f <= 0 or s <= 0:
+                #     raise ValueError("Moving average windows must be positive.")
+                #
+                # if type(sd) is not dt.date or type(ed) is not dt.date:
+                #     raise ValueError("Only datetime dates allowed in start_dates, end_dates.")
+                # elif ed - sd < dt.timedelta(0):
+                #     raise ValueError("Start dates must always be before end dates.")
                 # The moving averages
                 # Notice that different moving averages are obtained for different combinations of
                 # start/end dates
@@ -537,8 +536,8 @@ cerebro_wf.broker.set_coc(eval(globalparams['coc']))
 
 cerebro_wf.addstrategy(SMACWalkForward,
                        # Give the results of the above optimization to SMACWalkForward (NOT OPTIONAL)
-                       var1=[f for f in wfdf.var1],
-                       var2=[s for s in wfdf.var2],
+                       var1=[eval(globalparams['var1type'])(f) for f in wfdf.var1],
+                       var2=[eval(globalparams['var2type'])(s) for s in wfdf.var2],
                        start_dates=[sd.date() for sd in wfdf.start_date],
                        end_dates=[ed.date() for ed in wfdf.end_date])
 cerebro_wf.addobserver(AcctValue)
