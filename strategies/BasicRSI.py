@@ -162,52 +162,45 @@ class BasicRSI(StrategyBase):
 
 
 class BasicRSIWalkForward(StrategyBase):  # todo 1204 I'm working on this to turn it into a strategy competitive to WF method
-
-
     # All the above lists must be of the same length, and they all line up
 
     def __init__(self):
         """Initialize the strategy"""
+        "The SMAC strategy but in a walk-forward analysis context"
         StrategyBase.__init__(self)
-        # self.sma = dict()
-        # self.var1 = dict()
-        # self.var2 = dict()
-        # self.var3 = dict()
-        # self.regime = dict()
-        self.params = dict()
-        self.ind = dict()
-        """The SMAC strategy but in a walk-forward analysis context"""
-        strategy_params = self.load_params(strategy=self.__class__.__name__.rstrip('_Heikin'), data=d)
-        params = {"start_dates": None,  # Starting days for trading periods (a list)
-                  "end_dates": None,  # Ending day for trading periods (a list)
-                  "var1": None,  # List of fast moving average windows, corresponding to start dates (a list)
-                  "var2": None,  # Like fast, but for slow moving average window (a list)
-                  "var3": None}
+        self.var1 = dict()
+        self.var2 = dict()
+        self.var3 = dict()
+        self.ema = dict()
+
         self.date_combos = [c for c in zip(self.p.start_dates, self.p.end_dates)]
-        # Error checking
+
+        "Error checking"
         if type(self.p.start_dates) is not list or type(self.p.end_dates) is not list or \
                 type(self.p.fast) is not list or type(self.p.slow) is not list:
             raise ValueError("Must past lists filled with numbers to params start_dates, end_dates, fast, slow.")
         elif len(self.p.start_dates) != len(self.p.end_dates) or \
                 len(self.p.fast) != len(self.p.start_dates) or len(self.p.slow) != len(self.p.start_dates):
             raise ValueError("All lists passed to params must have same length.")
+
+        "process params and datetime period for multi datafeeds"
         for d in self.getdatanames():
-            # self.sma[d] = dict()
-            # self.var1[d] = dict()
-            # self.var2[d] = dict()
-            # self.var3[d] = dict()
-            # self.regime[d] = dict()
+            "load params from the config file"
+            strategy_params = self.load_params(strategy=self.__class__.__name__.rstrip('_Heikin'), data=d)
+            # self.params[d] = dict()
+            self.var1[d] = dict()
+            self.var2[d] = dict()
+            self.var3[d] = dict()
+            self.ema[d] = dict()
+
             if 'Heikin' in d:
-                strategy_params = self.load_params(strategy=self.__class__.__name__.rstrip('_Heikin'), data=d)
-                # self.params[d] = dict()
+                # Additional indexing, allowing for differing start/end dates
+                # assign params for every period
+                # todo turn params below to zip function and assign to f, s, t
                 self.var1[d] = strategy_params['var1']  # ema_fast_window
                 self.var2[d] = strategy_params['var2']  # ema_slow_window
                 self.var3[d] = strategy_params['var3']  # stop_loss_rate
-
-                self.ind[d] = dict()
-                # Additional indexing, allowing for differing start/end dates
-                # assign params for every period
-                for sd, ed, f, s, t in zip(self.p.start_dates, self.p.end_dates, self.p.var1, self.p.var2, self.p.var3):
+                for sd, ed, f, s, t in zip(self.p.start_dates, self.p.end_dates, self.var1[d], self.var2[d], self.var3[d]):
                     # More error checking
                     '''
                     if type(f) is not int or type(s) is not int:
@@ -226,11 +219,12 @@ class BasicRSIWalkForward(StrategyBase):  # todo 1204 I'm working on this to tur
                     # The moving averages
                     # Notice that different moving averages are obtained for different combinations of
                     # start/end dates
-                    self.ind[d][(sd, ed)] = bt.indicators.EMA(self.getdatabyname(d),
-                                                                period=self.params[d]['ema_fast_window'],
-                                                                plotname="ema_fast: " + d)
+                    self.ema[d][(sd, ed)] = bt.indicators.EMA(self.getdatabyname(d),
+                                                              period=self.params[d]['ema_fast_window'],
+                                                              plotname="ema_fast: " + d)
                     self.var1[d][(sd, ed)] = f
                     self.var2[d][(sd, ed)] = s
+                    self.var3[d][(sd, ed)] = t
                     '''
                     self.fastma[d][(sd, ed)] = btind.SimpleMovingAverage(self.getdatabyname(d),
                                                                          period=f,
@@ -243,6 +237,18 @@ class BasicRSIWalkForward(StrategyBase):  # todo 1204 I'm working on this to tur
                     self.regime[d][(sd, ed)] = self.fastma[d][(sd, ed)] - self.slowma[d][(sd, ed)]
                     # In the future, use the backtrader indicator btind.CrossOver()
                     '''
+
+    def load_params(self, strategy, data):
+        with open('../dataset/symbol_config.yaml', 'r') as f:
+            symbol_config = f.read()
+            symbol_config = yaml.load(symbol_config, Loader=yaml.FullLoader)
+            param = data.replace('USDT', f'USDT_{strategy}')
+            # BNBUSDT_MyStrategy_10m
+            # param = param.remove('_Kline')
+            param = param.split('_')
+            strategy_params = symbol_config[param[0]][param[1]][param[2]]
+            f.close()
+        return strategy_params
 
     def next(self):
         """Define what will be done in a single step, including creating and closing trades"""
@@ -279,5 +285,6 @@ class BasicRSIWalkForward(StrategyBase):  # todo 1204 I'm working on this to tur
                     self.order_target_percent(data=self.getdatabyname(d), target=0.98)
 
             else:  # We have an open position
-                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[0]:  # A sell signal
+                if self.getdatabyname(d).close[-1] * self.var2[d][dtidx] <= self.getdatabyname(d).high[
+                    0]:  # A sell signal
                     self.order_target_percent(data=self.getdatabyname(d), target=0)

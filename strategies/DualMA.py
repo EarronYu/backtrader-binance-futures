@@ -31,7 +31,7 @@ class DualMA(bt.Strategy):
         sma_fast, sma_slow, self.buysig = {}, {}, {}
         for xc, xdat in enumerate(self.datas):
             sma_fast[xc] = bt.ind.SMA(xdat, period=self.p.nfast)
-            # sma_fast[xc] =bt.ind.SMA(xdat,period=self.p.nfast)
+            # sma_fast[xc] =bt.ema.SMA(xdat,period=self.p.nfast)
             sma_slow[xc] = bt.ind.SMA(xdat, period=self.p.nslow)
             self.buysig[xc] = bt.ind.CrossOver(sma_fast[xc], sma_slow[xc])
         #

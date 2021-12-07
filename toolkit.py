@@ -244,7 +244,7 @@ def bt_set(qx, anzMod=0):
     #
     # 设置简化名称
     qx.anz, qx.br = bt.analyzers, qx.cb.broker
-    # bt:backtrader,ind:indicators,p:param
+    # bt:backtrader,ema:indicators,p:param
 
     #
     # 初始化回测数据池,重新导入回测数据
