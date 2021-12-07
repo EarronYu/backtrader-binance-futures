@@ -171,7 +171,9 @@ class BasicRSIWalkForward(StrategyBase):  # todo 1204 I'm working on this to tur
         self.var1 = dict()
         self.var2 = dict()
         self.var3 = dict()
-        self.ema = dict()
+        self.ema_fast = dict()
+        self.ema_slow = dict()
+        self.rsi = dict()
 
         self.date_combos = [c for c in zip(self.p.start_dates, self.p.end_dates)]
 
