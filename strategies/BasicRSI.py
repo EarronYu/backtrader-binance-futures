@@ -193,7 +193,9 @@ class BasicRSIWalkForward(StrategyBase):  # todo 1204 I'm working on this to tur
             self.var1[d] = dict()
             self.var2[d] = dict()
             self.var3[d] = dict()
-            self.ema[d] = dict()
+            self.ema_fast[d] = dict()
+            self.ema_slow[d] = dict()
+            self.rsi[d] = dict()
 
             if 'Heikin' in d:
                 # Additional indexing, allowing for differing start/end dates
@@ -221,6 +223,13 @@ class BasicRSIWalkForward(StrategyBase):  # todo 1204 I'm working on this to tur
                     # The moving averages
                     # Notice that different moving averages are obtained for different combinations of
                     # start/end dates
+                    self.ind[d][(sd, ed)] = bt.indicators.EMA(self.getdatabyname(d),
+                                                                period=self.params[d]['ema_fast_window'],
+                                                                plotname="ema_fast: " + d)
+                    self.ind[d][(sd, ed)] = bt.indicators.EMA(self.getdatabyname(d),
+                                                                period=self.params[d]['ema_slow_window'],
+                                                                plotname="ema_slow: " + d)
+                    self.ind[d][(sd, ed)] = bt.indicators.RSI(self.getdatabyname(d))
                     self.ema[d][(sd, ed)] = bt.indicators.EMA(self.getdatabyname(d),
                                                               period=self.params[d]['ema_fast_window'],
                                                               plotname="ema_fast: " + d)
